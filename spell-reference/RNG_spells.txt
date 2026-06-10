@@ -64,7 +64,6 @@
 50	Call of Earth	Velious
 50	Jolt	Kunark
 51	Ensnare	EQ
-51	Resistant Discipline	Kunark
 51	Strength of Nature	Velious
 51	Tangle	Luclin
 52	Falcon Eye	Luclin
@@ -72,7 +71,6 @@
 52	Icewind	LoY
 53	Storm Strength	EQ
 54	Drones of Doom	EQ
-54	Fearless Discipline	Kunark
 54	Jolting Blades	Luclin
 54	Skin like Diamond	EQ
 55	Call of Fire	Velious
@@ -80,7 +78,6 @@
 55	Cinder Jolt	Velious
 55	Fire Swarm	LDoN
 55	Resist Cold	EQ
-55	Trueshot Discipline	Velious
 56	Chill Sight	EQ
 56	Greater Wolf Form	EQ
 56	Mark of the Predator	Luclin
@@ -94,7 +91,6 @@
 60	Enveloping Roots	EQ
 60	Thorncoat	EQ
 60	Warder's Protection	Luclin
-60	Weapon Shield Discipline	Velious
 61	Annul Magic	Kunark
 61	Circle of Winter	Kunark
 61	Counteract Disease	EQ
