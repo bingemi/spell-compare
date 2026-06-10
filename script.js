@@ -23,19 +23,24 @@ function parseMaster(raw) {
 }
 
 function parseChar(raw) {
-  const spells = new Set();
+  const spells = new Map();
   raw.split('\n').forEach(line => {
     const t = line.trim();
     if (!t || t.startsWith('#')) return;
     const parts = t.split('\t');
     if (parts.length < 2) return;
-    spells.add(parts[1].trim().toLowerCase());
+    const lvl = parseInt(parts[0]);
+    if (isNaN(lvl)) return;
+    spells.set(parts[1].trim().toLowerCase(), lvl);
   });
   return spells;
 }
 
+const ALLOWED_EXPANSIONS = ['EQ', 'Kunark', 'Velious', 'Luclin', 'LDoN', 'LoY', 'PoP', 'Gates', 'Omens'];
+
 function buildChips(master) {
-  const exps = [...new Set(master.map(s => s.expansion))].sort();
+  const available = new Set(master.map(s => s.expansion));
+  const exps = ALLOWED_EXPANSIONS.filter(e => available.has(e));
   const prev = { ...expansions };
   expansions = {};
   exps.forEach(e => expansions[e] = (e in prev) ? prev[e] : true);
@@ -93,11 +98,19 @@ function groupByExp(spells) {
   return groups;
 }
 
+function sortExps(exps) {
+  return [...exps].sort((a, b) => {
+    const ia = ALLOWED_EXPANSIONS.indexOf(a);
+    const ib = ALLOWED_EXPANSIONS.indexOf(b);
+    return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
+  });
+}
+
 function renderGrouped(spells, containerId) {
   const el = document.getElementById(containerId);
   if (!spells.length) { el.innerHTML = '<p class="no-issues">None.</p>'; return; }
   const groups = groupByExp(spells);
-  el.innerHTML = Object.keys(groups).sort().map(exp => `
+  el.innerHTML = sortExps(Object.keys(groups)).map(exp => `
     <div class="exp-group">
       <div class="exp-group-name">${exp}</div>
       ${groups[exp].map(s => `<div class="spell-row"><span class="spell-lvl">${s.level}</span><span class="spell-name">${s.name}</span></div>`).join('')}
@@ -110,18 +123,25 @@ function runComparison() {
   if (!loadedMaster.length) { showError('Select a class first to load the master spell list.'); return; }
   if (!charRaw) { showError('Paste your character spell list on the right.'); return; }
 
+  const charLevel = parseInt(document.getElementById('charLevel').value);
+  if (isNaN(charLevel) || charLevel < 1 || charLevel > 70) { showError('Enter a character level between 1 and 70.'); return; }
+
   const charSpells = parseChar(charRaw);
   const selected = new Set(Object.keys(expansions).filter(e => expansions[e]));
   if (!selected.size) { showError('Select at least one expansion to check.'); return; }
 
-  const filtered = loadedMaster.filter(s => selected.has(s.expansion));
+  const filtered = loadedMaster.filter(s => selected.has(s.expansion) && s.level <= charLevel);
   const filteredKeys = new Set(filtered.map(s => s.key));
-  const missing = filtered.filter(s => !charSpells.has(s.key));
-  const extra = [...charSpells].filter(k => !filteredKeys.has(k)).map(k => ({ key: k, name: k, expansion: 'Unknown', level: 0 }));
-  const matched = filtered.filter(s => charSpells.has(s.key));
+  const charFiltered = new Map();
+  for (const [key, lvl] of charSpells) {
+    if (lvl <= charLevel) charFiltered.set(key, lvl);
+  }
+  const missing = filtered.filter(s => !charFiltered.has(s.key));
+  const extra = [...charFiltered.keys()].filter(k => !filteredKeys.has(k)).map(k => ({ key: k, name: k, expansion: 'Unknown', level: 0 }));
+  const matched = filtered.filter(s => charFiltered.has(s.key));
 
   document.getElementById('statMaster').textContent = filtered.length;
-  document.getElementById('statChar').textContent = charSpells.size;
+  document.getElementById('statChar').textContent = charFiltered.size;
   document.getElementById('statMissing').textContent = missing.length;
   document.getElementById('missingCount').textContent = missing.length;
   document.getElementById('extraCount').textContent = extra.length;
@@ -141,7 +161,7 @@ function runComparison() {
     toggle.textContent = 'Show matched spells';
     content.classList.remove('open');
     const groups = groupByExp(matched);
-    content.innerHTML = Object.keys(groups).sort().map(exp => `
+    content.innerHTML = sortExps(Object.keys(groups)).map(exp => `
       <div class="exp-group">
         <div class="exp-group-name">${exp}</div>
         ${groups[exp].map(s => `<div class="spell-row"><span class="spell-lvl">${s.level}</span><span class="spell-name">${s.name}</span></div>`).join('')}
