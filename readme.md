@@ -1,0 +1,1 @@
+in order to run locally use: python3 -m http.server 8080

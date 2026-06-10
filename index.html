@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spell List Comparator</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+
+  <h1><i class="ti ti-wand" aria-hidden="true" style="font-size:20px;vertical-align:-2px;margin-right:6px"></i>Spell list comparator</h1>
+  <p class="subtitle">Select a class, paste your character spells, pick expansions, then compare.</p>
+
+  <div class="panels">
+    <div class="card">
+      <div class="panel-label"><i class="ti ti-book" aria-hidden="true" style="font-size:14px;vertical-align:-1px;margin-right:4px"></i>Master list</div>
+      <select id="classSelect">
+        <option value="">-- Select a class --</option>
+        <option value="BER">Berserker</option>
+        <option value="BRD">Bard</option>
+        <option value="BST">Beastlord</option>
+        <option value="CLR">Cleric</option>
+        <option value="DRU">Druid</option>
+        <option value="ENC">Enchanter</option>
+        <option value="MAG">Magician</option>
+        <option value="MNK">Monk</option>
+        <option value="NEC">Necromancer</option>
+        <option value="PAL">Paladin</option>
+        <option value="RNG">Ranger</option>
+        <option value="ROG">Rogue</option>
+        <option value="SHD">Shadow Knight</option>
+        <option value="SHM">Shaman</option>
+        <option value="WAR">Warrior</option>
+        <option value="WIZ">Wizard</option>
+      </select>
+      <div id="loadedInfo" class="loaded-info">Select a class to load its spell list.</div>
+    </div>
+    <div class="card">
+      <div class="panel-label"><i class="ti ti-user" aria-hidden="true" style="font-size:14px;vertical-align:-1px;margin-right:4px"></i>Character spells</div>
+      <textarea id="charInput" placeholder="Paste tab-delimited character spells&#10;Format: level&#9;spell name&#10;&#10;3&#9;Flame Lick&#10;6&#9;Snare&#10;8&#9;Minor Healing"></textarea>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="exp-header">
+      <span class="panel-label" style="margin:0"><i class="ti ti-package" aria-hidden="true" style="font-size:14px;vertical-align:-1px;margin-right:4px"></i>Expansions to check</span>
+      <div class="exp-actions">
+        <button class="exp-btn" onclick="setAll(true)">Select all</button>
+        <span style="color:var(--text3)">·</span>
+        <button class="exp-btn" onclick="setAll(false)">Clear</button>
+      </div>
+    </div>
+    <div class="exp-chips" id="expChips">
+      <span class="empty-exp">Select a class above to see expansions</span>
+    </div>
+  </div>
+
+  <div class="error-msg" id="errorMsg"></div>
+
+  <button class="run-btn" onclick="runComparison()">
+    <i class="ti ti-git-compare" aria-hidden="true" style="font-size:16px;vertical-align:-2px;margin-right:6px"></i>Compare spell lists
+  </button>
+
+  <div class="results" id="results">
+    <div class="stats">
+      <div class="stat"><div class="stat-num" id="statMaster">0</div><div class="stat-lbl">Master spells checked</div></div>
+      <div class="stat"><div class="stat-num" id="statChar">0</div><div class="stat-lbl">Character spells</div></div>
+      <div class="stat"><div class="stat-num red" id="statMissing">0</div><div class="stat-lbl">Missing</div></div>
+    </div>
+
+    <div class="card result-panel">
+      <h2><i class="ti ti-circle-x icon-danger" aria-hidden="true" style="font-size:16px"></i>Missing from character <span class="badge badge-danger" id="missingCount">0</span></h2>
+      <div id="missingList"></div>
+    </div>
+
+    <div class="card result-panel">
+      <h2><i class="ti ti-alert-triangle icon-warning" aria-hidden="true" style="font-size:16px"></i>On character, not in master <span class="badge badge-warning" id="extraCount">0</span></h2>
+      <div id="extraList"></div>
+    </div>
+
+    <div class="card result-panel">
+      <h2><i class="ti ti-circle-check icon-success" aria-hidden="true" style="font-size:16px"></i>Matched spells <span class="badge badge-success" id="matchCount">0</span></h2>
+      <div id="matchList"></div>
+      <button class="collapsible-toggle" onclick="toggleMatched()" id="matchToggle" style="display:none">Show matched spells</button>
+      <div class="collapsible-content" id="matchContent"></div>
+    </div>
+  </div>
+
+</div>
+<script src="script.js"></script>
+</body>
+</html>
