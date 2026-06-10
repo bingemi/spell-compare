@@ -113,7 +113,7 @@ function renderGrouped(spells, containerId) {
   el.innerHTML = sortExps(Object.keys(groups)).map(exp => `
     <div class="exp-group">
       <div class="exp-group-name">${exp}</div>
-      ${groups[exp].map(s => `<div class="spell-row"><span class="spell-lvl">${s.level}</span><span class="spell-name">${s.name}</span></div>`).join('')}
+      ${groups[exp].map(s => `<div class="spell-row"><span class="spell-lvl">${s.level}</span><span class="spell-name"><a href="https://everquest.allakhazam.com/search.html?q=${s.name.replace(/ /g, '+')}" target="_blank" rel="noopener">${s.name}</a></span></div>`).join('')}
     </div>`).join('');
 }
 
@@ -151,7 +151,7 @@ function runComparison() {
 
   const extraEl = document.getElementById('extraList');
   if (!extra.length) { extraEl.innerHTML = '<p class="no-issues">No unrecognised spells.</p>'; }
-  else { extraEl.innerHTML = extra.map(s => `<div class="spell-row"><span class="spell-name">${s.name}</span></div>`).join(''); }
+  else { extraEl.innerHTML = extra.map(s => `<div class="spell-row"><span class="spell-name"><a href="https://everquest.allakhazam.com/search.html?q=${s.name.replace(/ /g, '+')}" target="_blank" rel="noopener">${s.name}</a></span></div>`).join(''); }
 
   const toggle = document.getElementById('matchToggle');
   const content = document.getElementById('matchContent');
@@ -164,7 +164,7 @@ function runComparison() {
     content.innerHTML = sortExps(Object.keys(groups)).map(exp => `
       <div class="exp-group">
         <div class="exp-group-name">${exp}</div>
-        ${groups[exp].map(s => `<div class="spell-row"><span class="spell-lvl">${s.level}</span><span class="spell-name">${s.name}</span></div>`).join('')}
+        ${groups[exp].map(s => `<div class="spell-row"><span class="spell-lvl">${s.level}</span><span class="spell-name"><a href="https://everquest.allakhazam.com/search.html?q=${s.name.replace(/ /g, '+')}" target="_blank" rel="noopener">${s.name}</a></span></div>`).join('')}
       </div>`).join('');
   } else {
     toggle.style.display = 'none';

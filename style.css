@@ -107,6 +107,8 @@ textarea:focus { border-color: var(--info-border); }
 .spell-row:last-child { border-bottom: none; }
 .spell-lvl { width: 28px; font-size: 11px; color: var(--text2); text-align: right; flex-shrink: 0; }
 .spell-name { flex: 1; color: var(--text); }
+.spell-name a { color: inherit; text-decoration: none; cursor: pointer; }
+.spell-name a:hover { text-decoration: underline; }
 .no-issues { color: var(--text2); font-size: 13px; font-style: italic; }
 .error-msg {
   background: var(--danger-bg); border: 0.5px solid var(--danger-border);
