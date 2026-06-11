@@ -121,7 +121,7 @@ function runComparison() {
   hideError();
   const charRaw = document.getElementById('charInput').value.trim();
   if (!loadedMaster.length) { showError('Select a class first to load the master spell list.'); return; }
-  if (!charRaw) { showError('Paste your character spell list on the right.'); return; }
+  if (!charRaw) { showError('Upload your character spell file on the right.'); return; }
 
   const charLevel = parseInt(document.getElementById('charLevel').value);
   if (isNaN(charLevel) || charLevel < 1 || charLevel > 70) { showError('Enter a character level between 1 and 70.'); return; }
@@ -181,3 +181,56 @@ function toggleMatched() {
   const open = content.classList.toggle('open');
   toggle.textContent = open ? 'Hide matched spells' : 'Show matched spells';
 }
+
+function setupFileInput() {
+  const zone = document.getElementById('dropZone');
+  const input = document.getElementById('fileInput');
+
+  zone.addEventListener('click', () => input.click());
+
+  zone.addEventListener('dragover', e => {
+    e.preventDefault();
+    zone.classList.add('dragover');
+  });
+
+  zone.addEventListener('dragleave', () => {
+    zone.classList.remove('dragover');
+  });
+
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if (file) handleFile(file);
+  });
+
+  input.addEventListener('change', () => {
+    const file = input.files[0];
+    if (file) handleFile(file);
+  });
+}
+
+function handleFile(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    const text = e.target.result;
+    document.getElementById('charInput').value = text;
+    const count = parseChar(text).size;
+    document.getElementById('dropContent').style.display = 'none';
+    document.getElementById('dropFileInfo').style.display = 'block';
+    document.getElementById('dropZone').classList.add('has-file');
+    document.getElementById('dropFilename').textContent = file.name;
+    document.getElementById('dropSpellCount').textContent = `${count} spells loaded`;
+  };
+  reader.readAsText(file);
+}
+
+function clearFile() {
+  document.getElementById('charInput').value = '';
+  document.getElementById('dropContent').style.display = '';
+  document.getElementById('dropFileInfo').style.display = 'none';
+  document.getElementById('dropZone').classList.remove('has-file');
+  document.getElementById('fileInput').value = '';
+}
+
+setupFileInput();
