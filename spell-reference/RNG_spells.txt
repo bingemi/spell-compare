@@ -2,7 +2,6 @@
 2	Glimpse	EQ
 3	Flame Lick	EQ
 4	Lull Animal	EQ
-5	Tangling Weeds	EQ
 6	Snare	EQ
 7	Skin like Wood	EQ
 8	Minor Healing	EQ
