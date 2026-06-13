@@ -19,6 +19,8 @@
   <h1><i class="ti ti-arrow-up-circle" aria-hidden="true" style="font-size:20px;vertical-align:-2px;margin-right:6px"></i>AA Tracker</h1>
   <p class="subtitle">Track your Alternate Ability ranks across characters</p>
 
+  <div class="char-bar" id="charBar"></div>
+
   <div class="card" id="summaryCard">
     <div class="panel-section">
       <div class="panel-label"><i class="ti ti-clipboard-list" aria-hidden="true" style="font-size:14px;vertical-align:-1px;margin-right:4px"></i>Books Needed</div>
@@ -99,15 +101,103 @@
 </div>
 
 <script>
-const STORAGE_KEY = 'aa-tracker-entries';
+const STORAGE_KEY = 'aa-tracker-data';
 let editingId = null;
+let currentChar = '';
+let chars = {};
+let addingChar = false;
+
+function getAllData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const data = JSON.parse(raw);
+      if (data && data.chars) return data;
+    }
+  } catch {}
+  return { current: '', chars: {} };
+}
+
+function saveAllData(data) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
 
 function getEntries() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { return []; }
+  return chars[currentChar] || [];
 }
 
 function saveEntries(entries) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+  if (!currentChar) return;
+  chars[currentChar] = entries;
+  saveAllData({ current: currentChar, chars: chars });
+}
+
+function switchCharacter(name) {
+  if (name === currentChar) return;
+  currentChar = name;
+  colFilters = {};
+  sortCol = '';
+  sortDir = '';
+  document.getElementById('filterDropdown').style.display = 'none';
+  saveAllData({ current: currentChar, chars: chars });
+  renderCharBar();
+  renderTable();
+}
+
+function addCharacter() {
+  addingChar = true;
+  renderCharBar();
+  setTimeout(() => {
+    const inp = document.getElementById('newCharInput');
+    if (inp) { inp.focus(); inp.select(); }
+  }, 0);
+}
+
+function confirmAddChar() {
+  const inp = document.getElementById('newCharInput');
+  if (!inp) return;
+  const n = inp.value.trim();
+  if (!n) { addingChar = false; renderCharBar(); return; }
+  if (chars[n]) { alert('Character "' + n + '" already exists.'); return; }
+  chars[n] = [];
+  addingChar = false;
+  switchCharacter(n);
+}
+
+function cancelAddChar() {
+  addingChar = false;
+  renderCharBar();
+}
+
+function deleteCharacter(name) {
+  if (Object.keys(chars).length < 2) { alert('Cannot delete the last character.'); return; }
+  if (!confirm('Delete character "' + name + '" and all its AA data?')) return;
+  delete chars[name];
+  if (currentChar === name) currentChar = Object.keys(chars)[0] || '';
+  saveAllData({ current: currentChar, chars: chars });
+  colFilters = {};
+  sortCol = '';
+  sortDir = '';
+  document.getElementById('filterDropdown').style.display = 'none';
+  renderCharBar();
+  renderTable();
+}
+
+function renderCharBar() {
+  const bar = document.getElementById('charBar');
+  const names = Object.keys(chars);
+  let html = '<div class="char-pills">';
+  html += names.map(n =>
+    '<span class="char-pill' + (n === currentChar ? ' active' : '') + '" onclick="switchCharacter(\'' + n.replace(/'/g, "\\'") + '\')">' + esc(n) + '</span>'
+  ).join('');
+  if (addingChar) {
+    html += '<span class="char-add-form"><input type="text" id="newCharInput" placeholder="Character name" autocomplete="off" onkeydown="if(event.key===\'Enter\')confirmAddChar()"><button class="aa-btn aa-btn-primary" onclick="confirmAddChar()" style="padding:5px 10px;font-size:12px">Save</button><button class="aa-btn" onclick="cancelAddChar()" style="padding:5px 10px;font-size:12px">Cancel</button></span>';
+  } else {
+    html += '<button class="aa-btn aa-btn-primary" onclick="addCharacter()" style="font-size:12px;padding:5px 12px"><i class="ti ti-plus" style="font-size:14px;vertical-align:-1px"></i> Add Character</button>';
+  }
+  html += (names.length > 1 && names.includes(currentChar) ? '<button class="aa-btn aa-btn-danger" onclick="deleteCharacter(\'' + currentChar.replace(/'/g, "\\'") + '\')" title="Delete character" style="font-size:11px;padding:5px 8px;margin-left:4px"><i class="ti ti-trash" style="font-size:14px;vertical-align:-1px"></i></button>' : '');
+  html += '</div>';
+  bar.innerHTML = html;
 }
 
 const CLASS_ORDER = ['BER','BRD','BST','CLR','DRU','ENC','MAG','MNK','NEC','PAL','RNG','ROG','SHD','SHM','WAR','WIZ'];
@@ -203,6 +293,10 @@ function toggleAll(col, checked) {
 }
 
 function renderSummary() {
+  if (!currentChar) {
+    document.getElementById('summaryContent').innerHTML = '';
+    return;
+  }
   const entries = getEntries();
   const needed = {}; // class -> { Greater: N, Exalted: N, Ascendant: N }
 
@@ -250,6 +344,12 @@ function renderSummary() {
 
 function renderTable() {
   renderSummary();
+  if (!currentChar) {
+    document.getElementById('aaTableBody').innerHTML = '';
+    document.getElementById('aaEmpty').style.display = 'block';
+    document.getElementById('aaEmpty').textContent = 'Add a character above to get started.';
+    return;
+  }
   const entries = getEntries();
 
   // apply column filters
@@ -312,8 +412,8 @@ function renderTable() {
     const stText = {capped:'Capped',done:'Done',partial:'In prog',none:'Not started'}[st];
     const stBadge = st === 'capped' ? '<span class="badge badge-capped">Capped</span>' :
       st === 'done' ? '<span style="color:var(--success-text)">&#10003; Done</span>' :
-      st === 'partial' ? '<span style="color:var(--warning-text)">~ In prog</span>' :
-      '<span style="color:var(--text3)">- Not started</span>';
+      st === 'partial' ? '<span style="color:var(--warning-text)">In Progress</span>' :
+      '<span style="color:var(--text3)">Not Started</span>';
     return '<tr>' +
       '<td><strong>' + esc(e.name) + '</strong></td>' +
       '<td>' + (e.class || '-') + '</td>' +
@@ -418,7 +518,14 @@ function deleteAA(id) {
   renderTable();
 }
 
-renderTable();
+{
+  const data = getAllData();
+  currentChar = data.current || '';
+  chars = data.chars || {};
+  if (!chars[currentChar]) currentChar = Object.keys(chars)[0] || '';
+  renderCharBar();
+  renderTable();
+}
 </script>
 </body>
 </html>
