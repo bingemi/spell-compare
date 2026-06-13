@@ -45,7 +45,7 @@ select:focus { border-color: var(--info-border); }
 .level-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
 .level-row label { font-size: 13px; color: var(--text2); }
 .level-row input, .level-row select {
-  padding: 4px 8px; font-size: 13px; font-family: var(--font);
+  padding: 8px; font-size: 13px; font-family: var(--font);
   border: 0.5px solid var(--border2); border-radius: var(--radius-md);
   background: var(--bg2); color: var(--text); outline: none;
 }
@@ -68,10 +68,6 @@ textarea:focus { border-color: var(--info-border); }
 }
 .drop-zone:hover, .drop-zone.dragover {
   border-color: var(--info-border); background: var(--info-bg);
-}
-.drop-zone.has-file {
-  border-style: solid; border-color: var(--success-border);
-  background: var(--success-bg);
 }
 .drop-text { font-size: 14px; color: var(--text2); margin-top: 8px; }
 .drop-hint { font-size: 12px; color: var(--text3); margin-top: 4px; font-style: italic; }
@@ -153,3 +149,19 @@ textarea:focus { border-color: var(--info-border); }
 .collapsible-toggle:hover { text-decoration: underline; }
 .collapsible-content { display: none; margin-top: 8px; }
 .collapsible-content.open { display: block; }
+
+.nav-bar {
+  display: flex; align-items: center; gap: 4px;
+  padding: 0; margin-bottom: 1.5rem;
+  border-bottom: 0.5px solid var(--border);
+}
+.nav-link {
+  padding: 10px 12px 8px;
+  font-size: 13px; font-weight: 500; text-decoration: none;
+  color: var(--text2); transition: color .15s;
+  display: inline-flex; align-items: center; gap: 6px;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+.nav-link:hover { color: var(--text); }
+.nav-link.active { color: var(--info-text); border-bottom-color: var(--info-text); }

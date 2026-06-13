@@ -43,16 +43,19 @@ function buildChips(master) {
   const exps = ALLOWED_EXPANSIONS.filter(e => available.has(e));
   const prev = { ...expansions };
   expansions = {};
-  exps.forEach(e => expansions[e] = (e in prev) ? prev[e] : true);
+  const defaultTrue = new Set(['EQ', 'Kunark', 'Velious', 'Luclin', 'LDoN']);
+  exps.forEach(e => expansions[e] = (e in prev) ? prev[e] : defaultTrue.has(e));
   renderChips();
 }
+
+const EXP_NAMES = { EQ: 'Classic' };
 
 function renderChips() {
   const c = document.getElementById('expChips');
   const exps = Object.keys(expansions);
   if (!exps.length) { c.innerHTML = '<span class="empty-exp">Select a class above to see expansions</span>'; return; }
   c.innerHTML = exps.map(e =>
-    `<span class="chip ${expansions[e] ? 'active' : ''}" onclick="toggleExp('${e}')"><span class="dot"></span>${e}</span>`
+    `<span class="chip ${expansions[e] ? 'active' : ''}" onclick="toggleExp('${e}')"><span class="dot"></span>${EXP_NAMES[e] || e}</span>`
   ).join('');
 }
 
