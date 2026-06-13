@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Liminal Locations</title>
+<title>Froggy Locations</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
 <link rel="stylesheet" href="style.css">
 </head>
@@ -12,20 +12,20 @@
 
   <nav class="nav-bar">
     <a class="nav-link" href="index.html"><i class="ti ti-wand" aria-hidden="true"></i>Missing Spells</a>
-    <a class="nav-link active" href="liminal.html"><i class="ti ti-map-pin" aria-hidden="true"></i>Liminal Locations</a>
+    <a class="nav-link active" href="froggy.html"><i class="ti ti-map-pin" aria-hidden="true"></i>Froggy Locations</a>
     <a class="nav-link" href="aa-tracker.html"><i class="ti ti-arrow-up-circle" aria-hidden="true"></i>AA Tracker</a>
   </nav>
 
-  <h1><i class="ti ti-map-pin" aria-hidden="true" style="font-size:20px;vertical-align:-2px;margin-right:6px"></i>Liminal Locations</h1>
-  <p class="subtitle">Discover where Liminal is hiding</p>
-  <div id="liminalContent"></div>
+  <h1><i class="ti ti-map-pin" aria-hidden="true" style="font-size:20px;vertical-align:-2px;margin-right:6px"></i>Froggy Locations</h1>
+  <p class="subtitle">Discover where Froggy is hiding</p>
+  <div id="froggyContent"></div>
 
 </div>
 <script>
-function loadLiminalLocations() {
-  const el = document.getElementById('liminalContent');
+function loadFroggyLocations() {
+  const el = document.getElementById('froggyContent');
   if (el.dataset.loaded) return;
-  fetch('liminal-reference/liminal-locations.json')
+  fetch('froggy-reference/froggy-locations.json')
     .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
     .then(data => {
       el.innerHTML = Object.entries(data).map(([zone, locations]) =>
@@ -38,7 +38,7 @@ function loadLiminalLocations() {
     })
     .catch(err => { el.innerHTML = '<div class="card"><p class="no-issues">Failed to load: ' + err.message + '</p></div>'; });
 }
-loadLiminalLocations();
+loadFroggyLocations();
 </script>
 </body>
 </html>

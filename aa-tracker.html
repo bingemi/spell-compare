@@ -12,7 +12,7 @@
 
   <nav class="nav-bar">
     <a class="nav-link" href="index.html"><i class="ti ti-wand" aria-hidden="true"></i>Missing Spells</a>
-    <a class="nav-link" href="liminal.html"><i class="ti ti-map-pin" aria-hidden="true"></i>Liminal Locations</a>
+    <a class="nav-link" href="froggy.html"><i class="ti ti-map-pin" aria-hidden="true"></i>Froggy Locations</a>
     <a class="nav-link active" href="aa-tracker.html"><i class="ti ti-arrow-up-circle" aria-hidden="true"></i>AA Tracker</a>
   </nav>
 
@@ -106,6 +106,7 @@ let editingId = null;
 let currentChar = '';
 let chars = {};
 let addingChar = false;
+let deletingChar = false;
 
 function getAllData() {
   try {
@@ -130,6 +131,62 @@ function saveEntries(entries) {
   if (!currentChar) return;
   chars[currentChar] = entries;
   saveAllData({ current: currentChar, chars: chars });
+}
+
+function exportAll() {
+  const data = getAllData();
+  downloadJSON(data, 'aa-tracker-data.json');
+}
+
+function exportChar(name) {
+  const data = { current: name, chars: {} };
+  data.chars[name] = chars[name] || [];
+  downloadJSON(data, 'aa-' + name.toLowerCase().replace(/\s+/g, '-') + '.json');
+}
+
+function downloadJSON(obj, filename) {
+  const blob = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data || !data.chars || typeof data.chars !== 'object') {
+        alert('Invalid file format.');
+        return;
+      }
+      if (!data.current || !data.chars[data.current]) data.current = Object.keys(data.chars)[0] || '';
+      // merge into existing characters
+      Object.keys(data.chars).forEach(name => {
+        if (chars[name]) {
+          const sure = confirm('Character "' + name + '" already exists. Overwrite its data?');
+          if (!sure) return;
+        }
+        chars[name] = data.chars[name];
+      });
+      saveAllData({ current: currentChar, chars: chars });
+      colFilters = {};
+      sortCol = '';
+      sortDir = '';
+      document.getElementById('filterDropdown').style.display = 'none';
+      renderCharBar();
+      renderTable();
+      alert('Data imported successfully.');
+    } catch {
+      alert('Failed to parse file.');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
 }
 
 function switchCharacter(name) {
@@ -170,11 +227,15 @@ function cancelAddChar() {
 }
 
 function deleteCharacter(name) {
-  if (Object.keys(chars).length < 2) { alert('Cannot delete the last character.'); return; }
-  if (!confirm('Delete character "' + name + '" and all its AA data?')) return;
+  deletingChar = true;
+  renderCharBar();
+}
+
+function confirmDeleteChar(name) {
   delete chars[name];
   if (currentChar === name) currentChar = Object.keys(chars)[0] || '';
   saveAllData({ current: currentChar, chars: chars });
+  deletingChar = false;
   colFilters = {};
   sortCol = '';
   sortDir = '';
@@ -183,20 +244,36 @@ function deleteCharacter(name) {
   renderTable();
 }
 
+function cancelDeleteChar() {
+  deletingChar = false;
+  renderCharBar();
+}
+
 function renderCharBar() {
   const bar = document.getElementById('charBar');
   const names = Object.keys(chars);
   let html = '<div class="char-pills">';
   html += names.map(n =>
-    '<span class="char-pill' + (n === currentChar ? ' active' : '') + '" onclick="switchCharacter(\'' + n.replace(/'/g, "\\'") + '\')">' + esc(n) + '</span>'
+    '<span class="char-pill' + (n === currentChar ? ' active' : '') + '"><span onclick="switchCharacter(\'' + n.replace(/'/g, "\\'") + '\')">' + esc(n) + '</span><i class="ti ti-download" onclick="event.stopPropagation();exportChar(\'' + n.replace(/'/g, "\\'") + '\')" title="Export ' + esc(n) + '" style="font-size:12px;margin-left:4px;cursor:pointer;opacity:0.5"></i></span>'
   ).join('');
   if (addingChar) {
     html += '<span class="char-add-form"><input type="text" id="newCharInput" placeholder="Character name" autocomplete="off" onkeydown="if(event.key===\'Enter\')confirmAddChar()"><button class="aa-btn aa-btn-primary" onclick="confirmAddChar()" style="padding:5px 10px;font-size:12px">Save</button><button class="aa-btn" onclick="cancelAddChar()" style="padding:5px 10px;font-size:12px">Cancel</button></span>';
   } else {
     html += '<button class="aa-btn aa-btn-primary" onclick="addCharacter()" style="font-size:12px;padding:5px 12px"><i class="ti ti-plus" style="font-size:14px;vertical-align:-1px"></i> Add Character</button>';
   }
-  html += (names.length > 1 && names.includes(currentChar) ? '<button class="aa-btn aa-btn-danger" onclick="deleteCharacter(\'' + currentChar.replace(/'/g, "\\'") + '\')" title="Delete character" style="font-size:11px;padding:5px 8px;margin-left:4px"><i class="ti ti-trash" style="font-size:14px;vertical-align:-1px"></i></button>' : '');
+  if (deletingChar) {
+    html += '<span style="font-size:12px;color:var(--text2);margin-left:8px">Delete ' + esc(currentChar) + '?</span>' +
+      '<button class="aa-btn aa-btn-danger" onclick="confirmDeleteChar(\'' + currentChar.replace(/'/g, "\\'") + '\')" style="padding:5px 10px;font-size:12px">Delete</button>' +
+      '<button class="aa-btn" onclick="cancelDeleteChar()" style="padding:5px 10px;font-size:12px">Cancel</button>';
+  } else {
+    html += (names.includes(currentChar) ? '<button class="aa-btn aa-btn-danger" onclick="deleteCharacter(\'' + currentChar.replace(/'/g, "\\'") + '\')" title="Delete character" style="font-size:11px;padding:5px 8px;margin-left:4px"><i class="ti ti-trash" style="font-size:14px;vertical-align:-1px"></i></button>' : '');
+  }
+  html += '<span style="margin-left:auto;display:inline-flex;gap:4px">' +
+    '<button class="aa-btn" onclick="exportAll()" style="font-size:11px;padding:4px 10px" title="Export all characters"><i class="ti ti-download" style="font-size:13px;vertical-align:-1px;margin-right:2px"></i>Export All</button>' +
+    '<button class="aa-btn" onclick="document.getElementById(\'importInput\').click()" style="font-size:11px;padding:4px 10px" title="Import data"><i class="ti ti-upload" style="font-size:13px;vertical-align:-1px;margin-right:2px"></i>Import</button>' +
+    '</span>';
   html += '</div>';
+  html += '<input type="file" id="importInput" accept=".json" hidden onchange="importData(event)">';
   bar.innerHTML = html;
 }
 

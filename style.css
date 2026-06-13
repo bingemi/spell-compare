@@ -212,7 +212,7 @@ textarea:focus { border-color: var(--info-border); }
 .filter-dropdown .fd-row:hover { background: var(--bg2); }
 .filter-dropdown input[type=checkbox] { accent-color: var(--info-text); }
 .char-bar { margin-bottom: 1rem; }
-.char-pills { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.char-pills { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; width: 100%; }
 .char-pill { font-size: 13px; padding: 5px 14px; border-radius: 20px; cursor: pointer; border: 0.5px solid var(--border2); background: var(--bg2); color: var(--text2); transition: background .15s, color .15s; user-select: none; }
 .char-pill:hover { border-color: var(--info-border); color: var(--info-text); }
 .char-pill.active { background: var(--info-bg); border-color: var(--info-border); color: var(--info-text); }
