@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AA Tracker</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+
+  <nav class="nav-bar">
+    <a class="nav-link" href="index.html"><i class="ti ti-wand" aria-hidden="true"></i>Missing Spells</a>
+    <a class="nav-link" href="liminal.html"><i class="ti ti-map-pin" aria-hidden="true"></i>Liminal Locations</a>
+    <a class="nav-link active" href="aa-tracker.html"><i class="ti ti-arrow-up-circle" aria-hidden="true"></i>AA Tracker</a>
+  </nav>
+
+  <h1><i class="ti ti-arrow-up-circle" aria-hidden="true" style="font-size:20px;vertical-align:-2px;margin-right:6px"></i>AA Tracker</h1>
+  <p class="subtitle">Track your Alternate Ability ranks across characters</p>
+
+  <div class="card" id="summaryCard">
+    <div class="panel-section">
+      <div class="panel-label"><i class="ti ti-clipboard-list" aria-hidden="true" style="font-size:14px;vertical-align:-1px;margin-right:4px"></i>Books Needed</div>
+      <div id="summaryContent"></div>
+    </div>
+  </div>
+
+  <div class="card" id="formCard" style="display:none">
+    <div class="panel-section">
+      <div class="panel-label"><i class="ti ti-plus" aria-hidden="true" style="font-size:14px;vertical-align:-1px;margin-right:4px"></i><span id="formTitle">Add AA</span></div>
+      <div class="aa-form" id="aaForm">
+        <input type="text" id="aaName" placeholder="AA Name" autocomplete="off">
+        <select id="aaClass">
+          <option value="">Any class</option>
+          <option value="BER">Berserker</option>
+          <option value="BRD">Bard</option>
+          <option value="BST">Beastlord</option>
+          <option value="CLR">Cleric</option>
+          <option value="DRU">Druid</option>
+          <option value="ENC">Enchanter</option>
+          <option value="MAG">Magician</option>
+          <option value="MNK">Monk</option>
+          <option value="NEC">Necromancer</option>
+          <option value="PAL">Paladin</option>
+          <option value="RNG">Ranger</option>
+          <option value="ROG">Rogue</option>
+          <option value="SHD">Shadow Knight</option>
+          <option value="SHM">Shaman</option>
+          <option value="WAR">Warrior</option>
+          <option value="WIZ">Wizard</option>
+        </select>
+        <select id="aaTier">
+          <option value="">-- Tier --</option>
+          <option value="Greater">Greater</option>
+          <option value="Exalted">Exalted</option>
+          <option value="Ascendant">Ascendant</option>
+        </select>
+        <div style="display:flex;gap:8px">
+          <input type="number" id="aaTotalRanks" placeholder="Total Ranks" min="1" step="1" style="flex:1">
+          <input type="number" id="aaCurrentRank" placeholder="Current Rank" min="0" step="1" style="flex:1">
+        </div>
+        <div class="full-width" style="display:flex;align-items:center;gap:6px;margin-top:2px">
+          <input type="checkbox" id="aaCapped" style="accent-color:var(--info-text)">
+          <label for="aaCapped" style="font-size:13px;color:var(--text2);cursor:pointer">Capped / Maxed — no more ranks needed</label>
+        </div>
+        <input type="text" id="aaNotes" placeholder="Notes" autocomplete="off" class="full-width">
+        <div class="full-width" style="display:flex;gap:8px;margin-top:4px">
+          <button class="aa-btn aa-btn-primary" onclick="saveAA()"><i class="ti ti-device-floppy" aria-hidden="true" style="font-size:14px;vertical-align:-1px;margin-right:4px"></i>Save</button>
+          <button class="aa-btn" onclick="hideForm()">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="panel-section">
+      <div class="panel-label" style="display:flex;align-items:center;gap:8px"><i class="ti ti-list" aria-hidden="true" style="font-size:14px;vertical-align:-1px;margin-right:4px"></i>Alternate Abilities<button class="aa-btn aa-btn-primary" onclick="showForm()" style="margin-left:auto"><i class="ti ti-plus" aria-hidden="true" style="font-size:14px;vertical-align:-1px;margin-right:2px"></i>Add AA</button></div>
+      <div id="filterDropdown" class="filter-dropdown" style="display:none"></div>
+      <table class="aa-table" id="aaTable">
+        <thead>
+          <tr>
+            <th class="th-sort" onclick="toggleSort('name')">Name<i class="ti ti-arrows-sort" id="s-name" style="font-size:12px;margin-left:4px;vertical-align:-1px"></i></th>
+            <th class="col-class th-sort" onclick="toggleSort('class')">Class<i class="ti ti-arrows-sort" id="s-class" style="font-size:12px;margin-left:4px;vertical-align:-1px"></i><i class="ti ti-filter" id="f-class" onclick="event.stopPropagation();showFilter('class')" style="font-size:11px;margin-left:2px;vertical-align:-1px;cursor:pointer;opacity:0.5"></i></th>
+            <th class="col-tier th-sort" onclick="toggleSort('tier')">Tier<i class="ti ti-arrows-sort" id="s-tier" style="font-size:12px;margin-left:4px;vertical-align:-1px"></i><i class="ti ti-filter" id="f-tier" onclick="event.stopPropagation();showFilter('tier')" style="font-size:11px;margin-left:2px;vertical-align:-1px;cursor:pointer;opacity:0.5"></i></th>
+            <th class="col-rank th-sort" onclick="toggleSort('totalRanks')">Total<i class="ti ti-arrows-sort" id="s-totalRanks" style="font-size:12px;margin-left:4px;vertical-align:-1px"></i></th>
+            <th class="col-rank th-sort" onclick="toggleSort('currentRank')">Rank<i class="ti ti-arrows-sort" id="s-currentRank" style="font-size:12px;margin-left:4px;vertical-align:-1px"></i></th>
+            <th class="th-sort" onclick="toggleSort('status')">Status<i class="ti ti-arrows-sort" id="s-status" style="font-size:12px;margin-left:4px;vertical-align:-1px"></i><i class="ti ti-filter" id="f-status" onclick="event.stopPropagation();showFilter('status')" style="font-size:11px;margin-left:2px;vertical-align:-1px;cursor:pointer;opacity:0.4"></i></th>
+            <th>Notes</th>
+            <th class="col-actions"></th>
+          </tr>
+        </thead>
+        <tbody id="aaTableBody"></tbody>
+      </table>
+      <div class="aa-empty" id="aaEmpty">No AAs yet. Add one above.</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const STORAGE_KEY = 'aa-tracker-entries';
+let editingId = null;
+
+function getEntries() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { return []; }
+}
+
+function saveEntries(entries) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+}
+
+const CLASS_ORDER = ['BER','BRD','BST','CLR','DRU','ENC','MAG','MNK','NEC','PAL','RNG','ROG','SHD','SHM','WAR','WIZ'];
+const CLASS_NAMES = {BER:'Berserker',BRD:'Bard',BST:'Beastlord',CLR:'Cleric',DRU:'Druid',ENC:'Enchanter',MAG:'Magician',MNK:'Monk',NEC:'Necromancer',PAL:'Paladin',RNG:'Ranger',ROG:'Rogue',SHD:'Shadow Knight',SHM:'Shaman',WAR:'Warrior',WIZ:'Wizard'};
+const TIER_ORDER = ['Greater','Exalted','Ascendant'];
+
+let sortCol = '';
+let sortDir = '';
+let colFilters = {}; // {class:Set(), tier:Set(), status:Set()}
+
+function getStatus(e) {
+  if (e.capped) return 'capped';
+  if (e.currentRank >= e.totalRanks) return 'done';
+  if (e.currentRank > 0) return 'partial';
+  return 'none';
+}
+
+function toggleSort(col) {
+  if (sortCol === col) {
+    if (sortDir === 'asc') sortDir = 'desc';
+    else { sortCol = ''; sortDir = ''; }
+  } else { sortCol = col; sortDir = 'asc'; }
+  renderTable();
+}
+
+function showFilter(col) {
+  const existing = document.getElementById('filterDropdown');
+  if (existing.style.display !== 'none' && existing.dataset.col === col) {
+    existing.style.display = 'none';
+    return;
+  }
+
+  const entries = getEntries();
+  let values = [];
+  if (col === 'class') values = CLASS_ORDER.filter(v => entries.some(e => e.class === v));
+  else if (col === 'tier') values = TIER_ORDER.filter(v => entries.some(e => e.tier === v));
+  else if (col === 'status') values = ['capped','done','partial','none'];
+
+  if (!colFilters[col]) colFilters[col] = new Set();
+  const sel = colFilters[col];
+
+  const th = document.querySelector('#f-' + col).closest('th');
+  const rect = th.getBoundingClientRect();
+  const containerRect = document.querySelector('.container').getBoundingClientRect();
+
+  existing.style.left = (rect.left - containerRect.left) + 'px';
+  existing.style.top = (rect.bottom - containerRect.top) + 'px';
+  existing.dataset.col = col;
+  existing.style.display = '';
+  existing.innerHTML =
+    '<div class="fd-header">' +
+      '<label class="fd-all"><input type="checkbox" onchange="toggleAll(\''+col+'\',this.checked)" ' + (sel.size === 0 ? 'checked' : '') + '> Select All</label>' +
+    '</div>' +
+    '<div class="fd-body">' +
+      values.map(v => {
+        const lbl = col === 'status' ? ({capped:'Capped',done:'Done',partial:'In prog',none:'Not started'}[v] || v) : v;
+        return '<label class="fd-row"><input type="checkbox" value="'+v+'" onchange="toggleFilter(\''+col+'\',\''+v+'\',this.checked)" ' + (sel.size === 0 || sel.has(v) ? 'checked' : '') + '> ' + lbl + '</label>';
+      }).join('') +
+    '</div>';
+
+  const close = (e) => {
+    if (!existing.contains(e.target) && !e.target.closest('th')) {
+      existing.style.display = 'none';
+      document.removeEventListener('click', close);
+    }
+  };
+  setTimeout(() => document.addEventListener('click', close), 0);
+}
+
+function toggleFilter(col, value, checked) {
+  if (!colFilters[col]) colFilters[col] = new Set();
+  const sel = colFilters[col];
+  if (checked) sel.add(value);
+  else sel.delete(value);
+  renderTable();
+}
+
+function toggleAll(col, checked) {
+  if (!colFilters[col]) colFilters[col] = new Set();
+  const sel = colFilters[col];
+  sel.clear();
+  if (!checked) {
+    // mark all as explicitly excluded
+    const entries = getEntries();
+    let values = [];
+    if (col === 'class') values = CLASS_ORDER.filter(v => entries.some(e => e.class === v));
+    else if (col === 'tier') values = TIER_ORDER.filter(v => entries.some(e => e.tier === v));
+    else if (col === 'status') values = ['capped','done','partial','none'];
+    values.forEach(v => sel.add(v));
+  }
+  renderTable();
+  showFilter(col);
+}
+
+function renderSummary() {
+  const entries = getEntries();
+  const needed = {}; // class -> { Greater: N, Exalted: N, Ascendant: N }
+
+  entries.forEach(e => {
+    if (e.capped) return;
+    const ranksNeeded = e.totalRanks - e.currentRank;
+    if (ranksNeeded <= 0) return;
+    const cls = e.class || 'Generic';
+    if (!needed[cls]) needed[cls] = { Greater: 0, Exalted: 0, Ascendant: 0 };
+    const tier = e.tier;
+    if (tier && needed[cls][tier] !== undefined) needed[cls][tier] += ranksNeeded;
+  });
+
+  const classes = Object.keys(needed).sort((a, b) => {
+    const ai = CLASS_ORDER.indexOf(a);
+    const bi = CLASS_ORDER.indexOf(b);
+    return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+  });
+
+  const el = document.getElementById('summaryContent');
+  if (classes.length === 0) {
+    el.innerHTML = '<p class="aa-empty" style="padding:0.5rem 0">All AAs are done or capped — no books needed.</p>';
+    return;
+  }
+
+  const totalBooks = { Greater: 0, Exalted: 0, Ascendant: 0 };
+  el.innerHTML = '<table class="aa-table"><thead><tr>' +
+    '<th>Class</th>' +
+    TIER_ORDER.map(t => '<th style="text-align:right">' + t + '</th>').join('') +
+    '</tr></thead><tbody>' +
+    classes.map(cls => {
+      const row = needed[cls];
+      TIER_ORDER.forEach(t => totalBooks[t] += row[t]);
+      return '<tr>' +
+        '<td><strong>' + (CLASS_NAMES[cls] || cls) + '</strong></td>' +
+        TIER_ORDER.map(t => '<td style="text-align:right">' + row[t] + '</td>').join('') +
+        '</tr>';
+    }).join('') +
+    '<tr style="border-top:1.5px solid var(--border2)">' +
+    '<td><strong>Total</strong></td>' +
+    TIER_ORDER.map(t => '<td style="text-align:right;font-weight:500">' + totalBooks[t] + '</td>').join('') +
+    '</tr>' +
+    '</tbody></table>';
+}
+
+function renderTable() {
+  renderSummary();
+  const entries = getEntries();
+
+  // apply column filters
+  let filtered = entries;
+  Object.keys(colFilters).forEach(col => {
+    const sel = colFilters[col];
+    if (!sel || sel.size === 0) return;
+    if (col === 'class') filtered = filtered.filter(e => sel.has(e.class));
+    else if (col === 'tier') filtered = filtered.filter(e => sel.has(e.tier));
+    else if (col === 'status') filtered = filtered.filter(e => sel.has(getStatus(e)));
+  });
+
+  // apply sort
+  if (sortCol && sortDir) {
+    filtered = filtered.slice().sort((a, b) => {
+      let va, vb;
+      if (sortCol === 'name') { va = a.name.toLowerCase(); vb = b.name.toLowerCase(); }
+      else if (sortCol === 'class') { va = a.class || ''; vb = b.class || ''; }
+      else if (sortCol === 'tier') { va = a.tier || ''; vb = b.tier || ''; }
+      else if (sortCol === 'totalRanks') { va = a.totalRanks; vb = b.totalRanks; }
+      else if (sortCol === 'currentRank') { va = a.currentRank; vb = b.currentRank; }
+      else if (sortCol === 'status') { va = getStatus(a); vb = getStatus(b); }
+      if (va < vb) return sortDir === 'asc' ? -1 : 1;
+      if (va > vb) return sortDir === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }
+
+  // update sort icons
+  document.querySelectorAll('.th-sort i.ti-arrows-sort').forEach(el => {
+    el.className = 'ti ti-arrows-sort';
+    el.style.opacity = '0.3';
+  });
+  if (sortCol) {
+    const icon = document.getElementById('s-' + sortCol);
+    if (icon) { icon.className = 'ti ti-sort-' + (sortDir === 'asc' ? 'ascending' : 'descending'); icon.style.opacity = '1'; }
+  }
+
+  // update filter icons
+  document.querySelectorAll('.th-sort i.ti-filter').forEach(el => {
+    const col = el.id.replace('f-', '');
+    const sel = colFilters[col];
+    el.style.opacity = (sel && sel.size > 0) ? '1' : '0.4';
+    el.style.color = (sel && sel.size > 0) ? 'var(--info-text)' : '';
+  });
+
+  const tbody = document.getElementById('aaTableBody');
+  const empty = document.getElementById('aaEmpty');
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  tbody.innerHTML = filtered.map(e => {
+    const done = e.currentRank >= e.totalRanks;
+    const st = getStatus(e);
+    const stText = {capped:'Capped',done:'Done',partial:'In prog',none:'Not started'}[st];
+    const stBadge = st === 'capped' ? '<span class="badge badge-capped">Capped</span>' :
+      st === 'done' ? '<span style="color:var(--success-text)">&#10003; Done</span>' :
+      st === 'partial' ? '<span style="color:var(--warning-text)">~ In prog</span>' :
+      '<span style="color:var(--text3)">- Not started</span>';
+    return '<tr>' +
+      '<td><strong>' + esc(e.name) + '</strong></td>' +
+      '<td>' + (e.class || '-') + '</td>' +
+      '<td>' + (e.tier ? '<span class="badge-tier badge-tier-' + e.tier.toLowerCase() + '">' + e.tier + '</span>' : '-') + '</td>' +
+      '<td>' + e.totalRanks + '</td>' +
+      '<td>' + e.currentRank + (done && !e.capped ? ' <span style="color:var(--success-text)">&#10003;</span>' : '') + '</td>' +
+      '<td style="white-space:nowrap">' + stBadge + '</td>' +
+      '<td>' + (e.notes ? esc(e.notes) : '') + '</td>' +
+      '<td class="col-actions">' +
+        '<button class="aa-btn-icon" onclick="editAA(\'' + e.id + '\')" title="Edit"><i class="ti ti-pencil"></i></button>' +
+        '<button class="aa-btn-icon" onclick="deleteAA(\'' + e.id + '\')" title="Delete" style="color:var(--danger-text)"><i class="ti ti-trash"></i></button>' +
+      '</td>' +
+    '</tr>';
+  }).join('');
+}
+
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function getFormData() {
+  return {
+    name: document.getElementById('aaName').value.trim(),
+    class: document.getElementById('aaClass').value,
+    tier: document.getElementById('aaTier').value,
+    totalRanks: Number(document.getElementById('aaTotalRanks').value) || 1,
+    currentRank: Number(document.getElementById('aaCurrentRank').value) || 0,
+    capped: document.getElementById('aaCapped').checked,
+    notes: document.getElementById('aaNotes').value.trim()
+  };
+}
+
+function showForm(title) {
+  if (!editingId) clearForm();
+  document.getElementById('formTitle').textContent = title || 'Add AA';
+  document.getElementById('formCard').style.display = '';
+  document.getElementById('aaName').focus();
+}
+
+function hideForm() {
+  clearForm();
+  document.getElementById('formCard').style.display = 'none';
+}
+
+function clearForm() {
+  document.getElementById('aaName').value = '';
+  document.getElementById('aaClass').value = '';
+  document.getElementById('aaTier').value = '';
+  document.getElementById('aaTotalRanks').value = '';
+  document.getElementById('aaCurrentRank').value = '';
+  document.getElementById('aaCapped').checked = false;
+  document.getElementById('aaNotes').value = '';
+  editingId = null;
+}
+
+function saveAA() {
+  const data = getFormData();
+  if (!data.name) { alert('AA name is required.'); return; }
+  if (data.currentRank > data.totalRanks) { alert('Current rank cannot exceed total ranks.'); return; }
+
+  let entries = getEntries();
+
+  if (editingId) {
+    const idx = entries.findIndex(e => e.id === editingId);
+    if (idx !== -1) { entries[idx] = { ...entries[idx], ...data }; }
+  } else {
+    data.id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    entries.push(data);
+  }
+
+  saveEntries(entries);
+  hideForm();
+  renderTable();
+}
+
+function editAA(id) {
+  const entries = getEntries();
+  const entry = entries.find(e => e.id === id);
+  if (!entry) return;
+
+  editingId = id;
+  document.getElementById('aaName').value = entry.name;
+  document.getElementById('aaClass').value = entry.class || '';
+  document.getElementById('aaTier').value = entry.tier || '';
+  document.getElementById('aaTotalRanks').value = entry.totalRanks;
+  document.getElementById('aaCurrentRank').value = entry.currentRank;
+  document.getElementById('aaCapped').checked = !!entry.capped;
+  document.getElementById('aaNotes').value = entry.notes || '';
+  document.getElementById('formTitle').textContent = 'Edit AA';
+  document.getElementById('formCard').style.display = '';
+  document.getElementById('aaName').focus();
+}
+
+function deleteAA(id) {
+  if (!confirm('Delete this AA entry?')) return;
+  let entries = getEntries();
+  entries = entries.filter(e => e.id !== id);
+  saveEntries(entries);
+  if (editingId === id) clearForm();
+  renderTable();
+}
+
+renderTable();
+</script>
+</body>
+</html>
