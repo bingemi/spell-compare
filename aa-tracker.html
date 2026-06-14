@@ -487,16 +487,16 @@ function renderTable() {
     const done = e.currentRank >= e.totalRanks;
     const st = getStatus(e);
     const stText = {capped:'Capped',done:'Done',partial:'In prog',none:'Not started'}[st];
-    const stBadge = st === 'capped' ? '<span class="badge badge-capped">Capped</span>' :
-      st === 'done' ? '<span style="color:var(--success-text)">&#10003; Done</span>' :
-      st === 'partial' ? '<span style="color:var(--warning-text)">In Progress</span>' :
-      '<span style="color:var(--text3)">Not Started</span>';
+    const stBadge = st === 'capped' ? '<span class="badge-status badge-status-capped">Capped</span>' :
+      st === 'done' ? '<span class="badge-status badge-status-done">Done</span>' :
+      st === 'partial' ? '<span class="badge-status badge-status-progress">In Progress</span>' :
+      '<span class="badge-status badge-status-none">Not Started</span>';
     return '<tr>' +
       '<td><strong>' + esc(e.name) + '</strong></td>' +
       '<td>' + (e.class || '-') + '</td>' +
       '<td>' + (e.tier ? '<span class="badge-tier badge-tier-' + e.tier.toLowerCase() + '">' + e.tier + '</span>' : '-') + '</td>' +
       '<td>' + e.totalRanks + '</td>' +
-      '<td>' + e.currentRank + (done && !e.capped ? ' <span style="color:var(--success-text)">&#10003;</span>' : '') + '</td>' +
+      '<td>' + e.currentRank + '</td>' +
       '<td style="white-space:nowrap">' + stBadge + '</td>' +
       '<td>' + (e.notes ? esc(e.notes) : '') + '</td>' +
       '<td class="col-actions">' +
