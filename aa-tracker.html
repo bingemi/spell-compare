@@ -62,9 +62,15 @@
           <input type="number" id="aaTotalRanks" placeholder="Total Ranks" min="1" step="1" style="flex:1">
           <input type="number" id="aaCurrentRank" placeholder="Current Rank" min="0" step="1" style="flex:1">
         </div>
-        <div class="full-width" style="display:flex;align-items:center;gap:6px;margin-top:2px">
-          <input type="checkbox" id="aaCapped" style="accent-color:var(--info-text)">
-          <label for="aaCapped" style="font-size:13px;color:var(--text2);cursor:pointer">Capped / Maxed — no more ranks needed</label>
+        <div class="full-width" style="display:flex;align-items:center;gap:12px;margin-top:2px">
+          <span style="display:flex;align-items:center;gap:6px">
+            <input type="checkbox" id="aaCapped" style="accent-color:var(--info-text)">
+            <label for="aaCapped" style="font-size:13px;color:var(--text2);cursor:pointer">Capped</label>
+          </span>
+          <span style="display:flex;align-items:center;gap:6px">
+            <input type="checkbox" id="aaRestricted" style="accent-color:var(--danger-text)">
+            <label for="aaRestricted" style="font-size:13px;color:var(--text2);cursor:pointer">Level Restricted</label>
+          </span>
         </div>
         <input type="text" id="aaNotes" placeholder="Notes" autocomplete="off" class="full-width">
         <div class="full-width" style="display:flex;gap:8px;margin-top:4px">
@@ -286,6 +292,7 @@ let sortDir = '';
 let colFilters = {}; // {class:Set(), tier:Set(), status:Set()}
 
 function getStatus(e) {
+  if (e.restricted) return 'restricted';
   if (e.capped) return 'capped';
   if (e.currentRank >= e.totalRanks) return 'done';
   if (e.currentRank > 0) return 'partial';
@@ -311,7 +318,7 @@ function showFilter(col) {
   let values = [];
   if (col === 'class') values = CLASS_ORDER.filter(v => entries.some(e => e.class === v));
   else if (col === 'tier') values = TIER_ORDER.filter(v => entries.some(e => e.tier === v));
-  else if (col === 'status') values = ['capped','done','partial','none'];
+  else if (col === 'status') values = ['restricted','capped','done','partial','none'];
 
   if (!colFilters[col]) colFilters[col] = new Set();
   const sel = colFilters[col];
@@ -330,7 +337,7 @@ function showFilter(col) {
     '</div>' +
     '<div class="fd-body">' +
       values.map(v => {
-        const lbl = col === 'status' ? ({capped:'Capped',done:'Done',partial:'In prog',none:'Not started'}[v] || v) : v;
+        const lbl = col === 'status' ? ({restricted:'Restricted',capped:'Capped',done:'Done',partial:'In prog',none:'Not started'}[v] || v) : v;
         return '<label class="fd-row"><input type="checkbox" value="'+v+'" onchange="toggleFilter(\''+col+'\',\''+v+'\',this.checked)" ' + (sel.size === 0 || sel.has(v) ? 'checked' : '') + '> ' + lbl + '</label>';
       }).join('') +
     '</div>';
@@ -362,7 +369,7 @@ function toggleAll(col, checked) {
     let values = [];
     if (col === 'class') values = CLASS_ORDER.filter(v => entries.some(e => e.class === v));
     else if (col === 'tier') values = TIER_ORDER.filter(v => entries.some(e => e.tier === v));
-    else if (col === 'status') values = ['capped','done','partial','none'];
+    else if (col === 'status') values = ['restricted','capped','done','partial','none'];
     values.forEach(v => sel.add(v));
   }
   renderTable();
@@ -439,7 +446,7 @@ function renderTable() {
     else if (col === 'status') filtered = filtered.filter(e => sel.has(getStatus(e)));
   });
 
-  // apply sort
+  // apply sort (default: class asc, then name asc)
   if (sortCol && sortDir) {
     filtered = filtered.slice().sort((a, b) => {
       let va, vb;
@@ -452,6 +459,13 @@ function renderTable() {
       if (va < vb) return sortDir === 'asc' ? -1 : 1;
       if (va > vb) return sortDir === 'asc' ? 1 : -1;
       return 0;
+    });
+  } else {
+    filtered = filtered.slice().sort((a, b) => {
+      const ca = (a.class || '').toLowerCase(), cb = (b.class || '').toLowerCase();
+      if (ca !== cb) return ca < cb ? -1 : 1;
+      const na = a.name.toLowerCase(), nb = b.name.toLowerCase();
+      return na < nb ? -1 : na > nb ? 1 : 0;
     });
   }
 
@@ -487,7 +501,8 @@ function renderTable() {
     const done = e.currentRank >= e.totalRanks;
     const st = getStatus(e);
     const stText = {capped:'Capped',done:'Done',partial:'In prog',none:'Not started'}[st];
-    const stBadge = st === 'capped' ? '<span class="badge-status badge-status-capped">Capped</span>' :
+    const stBadge = st === 'restricted' ? '<span class="badge-status badge-status-restricted">Restricted</span>' :
+      st === 'capped' ? '<span class="badge-status badge-status-capped">Capped</span>' :
       st === 'done' ? '<span class="badge-status badge-status-done">Done</span>' :
       st === 'partial' ? '<span class="badge-status badge-status-progress">In Progress</span>' :
       '<span class="badge-status badge-status-none">Not Started</span>';
@@ -521,6 +536,7 @@ function getFormData() {
     totalRanks: Number(document.getElementById('aaTotalRanks').value) || 1,
     currentRank: Number(document.getElementById('aaCurrentRank').value) || 0,
     capped: document.getElementById('aaCapped').checked,
+    restricted: document.getElementById('aaRestricted').checked,
     notes: document.getElementById('aaNotes').value.trim()
   };
 }
@@ -544,6 +560,7 @@ function clearForm() {
   document.getElementById('aaTotalRanks').value = '';
   document.getElementById('aaCurrentRank').value = '';
   document.getElementById('aaCapped').checked = false;
+  document.getElementById('aaRestricted').checked = false;
   document.getElementById('aaNotes').value = '';
   editingId = null;
 }
@@ -580,6 +597,7 @@ function editAA(id) {
   document.getElementById('aaTotalRanks').value = entry.totalRanks;
   document.getElementById('aaCurrentRank').value = entry.currentRank;
   document.getElementById('aaCapped').checked = !!entry.capped;
+  document.getElementById('aaRestricted').checked = !!entry.restricted;
   document.getElementById('aaNotes').value = entry.notes || '';
   document.getElementById('formTitle').textContent = 'Edit AA';
   document.getElementById('formCard').style.display = '';

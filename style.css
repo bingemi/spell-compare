@@ -120,6 +120,7 @@ textarea:focus { border-color: var(--info-border); }
 .badge-status-progress { background: var(--warning-bg); color: var(--warning-text); }
 .badge-status-capped { background: var(--success-bg); color: var(--success-text); }
 .badge-status-none { background: var(--bg2); color: var(--text3); }
+.badge-status-restricted { background: var(--danger-bg); color: var(--danger-text); }
 .badge-tier-greater { background:#e6f7e6; color:#2d7d2d; }
 .badge-tier-exalted { background:#e6f0ff; color:#2d5c9e; }
 .badge-tier-ascendant { background:#f0e6ff; color:#6b2d9e; }
