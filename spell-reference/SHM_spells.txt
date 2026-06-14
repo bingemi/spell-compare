@@ -39,11 +39,8 @@
 12	Disempower	EQ
 12	Enduring Breath	EQ
 12	Root	EQ
-13	Reebo's Lesser Augury	LDoN
 13	Walking Sleep	EQ
 14	Bind Affinity	EQ
-14	Reebo's Lesser Cleansing	LDoN
-14	Reebo's Lesser Exorcism	LDoN
 14	Spirit Strike	EQ
 15	Infectious Cloud	EQ
 15	Shrink	EQ
@@ -69,11 +66,8 @@
 22	Scale of Wolf	Kunark
 23	Cannibalize	EQ
 23	Frost Strike	EQ
-23	Reebo's Augury	LDoN
 23	Regeneration	EQ
 24	Envenomed Breath	EQ
-24	Reebo's Cleansing	LDoN
-24	Reebo's Exorcism	LDoN
 24	Remove Lesser Curse	LDoN
 24	Resist Cold	EQ
 25	Befriend Animal	EQ
@@ -111,12 +105,9 @@
 32	Malaisement	EQ
 32	Talisman of Tnarg	EQ
 33	Instill	EQ
-33	Reebo's Greater Augury	LDoN
 33	Winter's Roar	EQ
 34	Curse	LDoN
 34	Pack Shrew	LDoN
-34	Reebo's Greater Cleansing	LDoN
-34	Reebo's Greater Exorcism	LDoN
 34	Shock of the Tainted	Velious
 35	Resist Poison	EQ
 35	Tumultuous Strength	Velious
