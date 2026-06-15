@@ -2,8 +2,9 @@ local mq = require('mq')
 
 local radius = 30
 
-mq.delay(1000)
-mq.cmd('/keypress 1')
+mq.delay(200)
+mq.cmd('mqtarget npc radius 40 zradius 20')
+mq.cmd('/assistme')
 
 while true do
     local npcCount = mq.TLO.SpawnCount(('npc radius %d'):format(radius))()
@@ -14,8 +15,9 @@ while true do
 
     local targetID = mq.TLO.Target.ID()
     if not targetID or targetID == 0 then
-        mq.delay(500)
-        mq.cmd('/keypress 1')
+        mq.delay(200)
+        mq.cmd('mqtarget npc radius 40 zradius 20')
+        mq.cmd('/assistme')
     end
 
     mq.delay(100)
