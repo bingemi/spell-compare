@@ -1,0 +1,11 @@
+Sub Main
+    /echo Starting the Hide loop! To stop, type /endmac
+    :Loop
+    /doability "Sneak"
+    /delay 20
+	/doability "Hide"
+	/delay 20
+	/doability "Pick Pockets"
+	/delay 20
+    /goto :Loop
+/return

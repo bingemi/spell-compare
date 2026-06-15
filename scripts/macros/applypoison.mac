@@ -1,0 +1,21 @@
+Sub Main
+    /echo Starting the Advanced Bag-Swapping Poison loop! To stop, type /endmac
+    :Loop
+    
+    /if (!${FindItem[Atrophic Sap].ID}) {
+        /echo Out of Atrophic Sap! Stopping macro.
+        /endmac
+    }
+    
+    /nomodkey /itemnotify "${FindItem[Atrophic Sap].Name}" leftmouseup
+    /delay 2
+    
+    /nomodkey /itemnotify pack1 leftmouseup
+    /delay 2
+    
+    /nomodkey /itemnotify pack1 rightmouseup
+    
+    /delay 120
+    
+    /goto :Loop
+/return
