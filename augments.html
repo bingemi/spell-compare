@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Augment Reference</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="style.css">
+<style>
+.aug-grid { display:flex; flex-direction:column; gap:1.5rem; }
+.aug-table { width:100%; border-collapse:collapse; font-size:13px; }
+.aug-table th { font-size:11px; font-weight:500; color:var(--text2); text-transform:uppercase; letter-spacing:.05em; text-align:left; padding:6px 8px; border-bottom:0.5px solid var(--border); }
+.aug-table td { padding:8px; border-bottom:0.5px solid var(--border); }
+.aug-table tr:last-child td { border-bottom:none; }
+.dot-good, .dot-bad { display:inline-block; width:12px; height:12px; border-radius:50%; }
+.dot-good { background:#2d7d2d; }
+.dot-bad { background:#c0392b; }
+@media (prefers-color-scheme:dark) {
+  .dot-good { background:#7dcc7d; }
+  .dot-bad { background:#e57373; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <nav class="nav-bar">
+    <a class="nav-link" href="index.html"><i class="ti ti-wand" aria-hidden="true"></i>Missing Spells</a>
+    <a class="nav-link" href="froggy.html"><i class="ti ti-map-pin" aria-hidden="true"></i>Froggy Locations</a>
+    <a class="nav-link" href="aa-tracker.html"><i class="ti ti-arrow-up-circle" aria-hidden="true"></i>AA Tracker</a>
+    <a class="nav-link active" href="augments.html"><i class="ti ti-diamond" aria-hidden="true"></i>Augments</a>
+  </nav>
+
+  <h1><i class="ti ti-diamond" aria-hidden="true" style="font-size:20px;vertical-align:-2px;margin-right:6px"></i>Augment Reference</h1>
+  <p class="subtitle">Ascendant augments — green = good, red = bad</p>
+
+  <div class="card">
+    <div class="panel-section">
+      <div id="augContent"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+fetch('reference/augments/augments.json')
+  .then(r => r.json())
+  .then(data => {
+    const container = document.getElementById('augContent');
+    container.className = 'aug-grid';
+
+    Object.keys(data).forEach(category => {
+      const entries = data[category];
+      if (!entries.length) return;
+
+      const colKeys = Object.keys(entries[0]);
+      const isGoodBad = colKeys.slice(2).every(k => entries[0][k] === 'Good' || entries[0][k] === 'Bad');
+
+      const panel = document.createElement('div');
+      panel.innerHTML = '<div class="panel-label" style="margin-bottom:10px">' + category + '</div>';
+
+      const table = document.createElement('table');
+      table.className = 'aug-table';
+
+      const thead = document.createElement('thead');
+      const hr = document.createElement('tr');
+      colKeys.forEach(k => {
+        const th = document.createElement('th');
+        th.textContent = k;
+        hr.appendChild(th);
+      });
+      thead.appendChild(hr);
+      table.appendChild(thead);
+
+      const tbody = document.createElement('tbody');
+      entries.forEach(entry => {
+        const tr = document.createElement('tr');
+        colKeys.forEach(k => {
+          const td = document.createElement('td');
+          const val = entry[k];
+          if (colKeys.indexOf(k) >= 2 && isGoodBad && (val === 'Good' || val === 'Bad')) {
+            const dot = document.createElement('span');
+            dot.className = val === 'Good' ? 'dot-good' : 'dot-bad';
+            td.appendChild(dot);
+          } else {
+            td.textContent = val;
+          }
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
+      table.appendChild(tbody);
+      panel.appendChild(table);
+      container.appendChild(panel);
+    });
+  })
+  .catch(() => {
+    document.getElementById('augContent').innerHTML = '<p class="aa-empty">Failed to load augment data.</p>';
+  });
+</script>
+</body>
+</html>

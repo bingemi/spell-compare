@@ -1,0 +1,102 @@
+{
+    "Stat Augments": [
+        {
+            "Type": "Shard of Might (Ascendant)",
+            "Primary Stat": "Strength",
+            "Flawed": "Bad",
+            "Flawless": "Good",
+            "Ancient": "Bad",
+            "Peerless": "Bad"
+        },
+        {
+            "Type": "Sphere of Fortitude (Ascendant)",
+            "Primary Stat": "Stamina",
+            "Flawed": "Good",
+            "Flawless": "Bad",
+            "Ancient": "Good",
+            "Peerless": "Good"
+        },
+        {
+            "Type": "Fragment of Intellect (Ascendant)",
+            "Primary Stat": "Intelligence",
+            "Flawed": "Good",
+            "Flawless": "Bad",
+            "Ancient": "Good",
+            "Peerless": "Bad"
+        },
+        {
+            "Type": "Gemstone of Knowledge (Ascendant)",
+            "Primary Stat": "Wisdom",
+            "Flawed": "Bad",
+            "Flawless": "Good",
+            "Ancient": "Bad",
+            "Peerless": "Good"
+        },
+        {
+            "Type": "Jewel of Nimbleness (Ascendant)",
+            "Primary Stat": "Agility",
+            "Flawed": "Bad",
+            "Flawless": "Good",
+            "Ancient": "Bad",
+            "Peerless": "Good"
+        },
+        {
+            "Type": "Gem of Deftness (Ascendant)",
+            "Primary Stat": "Dexterity",
+            "Flawed": "Good",
+            "Flawless": "Bad",
+            "Ancient": "Good",
+            "Peerless": "Bad"
+        },
+        {
+            "Type": "Crystal of Enticement (Ascendant)",
+            "Primary Stat": "Charisma",
+            "Flawed": "Bad",
+            "Flawless": "Bad",
+            "Ancient": "Good",
+            "Peerless": "Bad"
+        }
+    ],
+    "Resistance Augments": [
+        {
+            "Type": "Pearl of Magical Warding (Ascendant)",
+            "Primary Stat": "Magic Resist",
+            "Exquisite": "Good",
+            "Pristine": "Bad",
+            "Immaculate": "Good",
+            "Peerless": "Good"
+        },
+        {
+            "Type": "Ruby of Fiery Warding (Ascendant)",
+            "Primary Stat": "Fire Resist",
+            "Exquisite": "Bad",
+            "Pristine": "Good",
+            "Immaculate": "Bad",
+            "Peerless": "Bad"
+        },
+        {
+            "Type": "Diamond of Chilling Protection (Ascendant)",
+            "Primary Stat": "Cold Resist",
+            "Exquisite": "Good",
+            "Pristine": "Bad",
+            "Immaculate": "Good",
+            "Peerless": "Good"
+        },
+        {
+            "Type": "Opal of Illness Warding (Ascendant)",
+            "Primary Stat": "Disease Resist",
+            "Exquisite": "Bad",
+            "Pristine": "Good",
+            "Immaculate": "Bad",
+            "Peerless": "Bad"
+        },
+        {
+            "Type": "Emerald of Poison Protection (Ascendant)",
+            "Primary Stat": "Poison Resist",
+            "Exquisite": "Good",
+            "Pristine": "Bad",
+            "Immaculate": "Good",
+            "Peerless": "Good"
+        }
+    ]
+}
