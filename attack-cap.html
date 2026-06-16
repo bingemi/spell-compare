@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Attack Cap Reference</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="style.css">
+<style>
+.aug-grid { display:flex; flex-direction:column; gap:1.5rem; }
+.aug-table { width:100%; border-collapse:collapse; font-size:13px; }
+.aug-table th { font-size:11px; font-weight:500; color:var(--text2); text-transform:uppercase; letter-spacing:.05em; text-align:left; padding:6px 8px; border-bottom:0.5px solid var(--border); }
+.aug-table td { padding:8px; border-bottom:0.5px solid var(--border); vertical-align:top; }
+.aug-table tr:last-child td { border-bottom:none; }
+.aug-note { font-size:12px; color:var(--text2); padding:8px; border-bottom:0.5px solid var(--border); }
+.aug-note:last-child { border-bottom:none; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <nav class="nav-bar">
+    <a class="nav-link" href="index.html"><i class="ti ti-wand" aria-hidden="true"></i>Missing Spells</a>
+    <a class="nav-link" href="aa-tracker.html"><i class="ti ti-arrow-up-circle" aria-hidden="true"></i>AA Tracker</a>
+    <a class="nav-link" href="froggy.html"><i class="ti ti-map-pin" aria-hidden="true"></i>Froggy Locations</a>
+    <a class="nav-link" href="augments.html"><i class="ti ti-diamond" aria-hidden="true"></i>Augments</a>
+    <a class="nav-link active" href="attack-cap.html"><i class="ti ti-sword" aria-hidden="true"></i>Attack Cap</a>
+  </nav>
+
+  <h1><i class="ti ti-sword" aria-hidden="true" style="font-size:20px;vertical-align:-2px;margin-right:6px"></i>Attack Cap Reference</h1>
+  <p class="subtitle">Double attack, dual wield, flurry, triple attack, and more</p>
+
+  <div class="card">
+    <div class="panel-section">
+      <div id="acContent"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+fetch('reference/attack-cap/attack-cap.json')
+  .then(r => r.json())
+  .then(data => {
+    const container = document.getElementById('acContent');
+    container.className = 'aug-grid';
+
+    const notes = data['Double Attack Notes'] || [];
+    const twoHandNotes = data['2 Handers Only Notes'] || [];
+
+    Object.keys(data).forEach(category => {
+      if (category === 'Double Attack Notes' || category === '2 Handers Only Notes') return;
+      const val = data[category];
+      const panel = document.createElement('div');
+      const label = document.createElement('div');
+      label.className = 'panel-label';
+      label.style.marginBottom = '10px';
+      label.textContent = category;
+      panel.appendChild(label);
+
+      if (Array.isArray(val)) {
+        if (val.length === 0) return;
+        const cols = [...new Set(val.flatMap(Object.keys))];
+        const table = document.createElement('table');
+        table.className = 'aug-table';
+        const thead = document.createElement('thead');
+        const hr = document.createElement('tr');
+        cols.forEach(k => {
+          const th = document.createElement('th');
+          th.textContent = k;
+          hr.appendChild(th);
+        });
+        thead.appendChild(hr);
+        table.appendChild(thead);
+        const tbody = document.createElement('tbody');
+        val.forEach(entry => {
+          const tr = document.createElement('tr');
+          cols.forEach(k => {
+            const td = document.createElement('td');
+            td.textContent = entry[k] ?? '-';
+            tr.appendChild(td);
+          });
+          tbody.appendChild(tr);
+        });
+        table.appendChild(tbody);
+
+        if (category === 'Double Attack Info' && notes.length) {
+          notes.forEach(n => {
+            const tr = document.createElement('tr');
+            const td = document.createElement('td');
+            td.colSpan = cols.length;
+            td.style.fontSize = '11px';
+            td.style.color = 'var(--text2)';
+            td.style.fontStyle = 'italic';
+            td.textContent = n;
+            tr.appendChild(td);
+            tbody.appendChild(tr);
+          });
+        }
+
+        if (category === '2 Handers Only AAs' && twoHandNotes.length) {
+          twoHandNotes.forEach(n => {
+            const tr = document.createElement('tr');
+            const td = document.createElement('td');
+            td.colSpan = cols.length;
+            td.style.fontSize = '11px';
+            td.style.color = 'var(--text2)';
+            td.style.fontStyle = 'italic';
+            td.textContent = n;
+            tr.appendChild(td);
+            tbody.appendChild(tr);
+          });
+        }
+
+        panel.appendChild(table);
+      } else if (typeof val === 'object') {
+        if (val.Ranks && Array.isArray(val.Ranks) && val.Ranks.length > 0) {
+          const cols = [...new Set(val.Ranks.flatMap(Object.keys))];
+          const table = document.createElement('table');
+          table.className = 'aug-table';
+          const thead = document.createElement('thead');
+          const hr = document.createElement('tr');
+          cols.forEach(k => {
+            const th = document.createElement('th');
+            th.textContent = k;
+            hr.appendChild(th);
+          });
+          thead.appendChild(hr);
+          table.appendChild(thead);
+          const tbody = document.createElement('tbody');
+          val.Ranks.forEach(entry => {
+            const tr = document.createElement('tr');
+            cols.forEach(k => {
+              const td = document.createElement('td');
+              td.textContent = entry[k] ?? '-';
+              tr.appendChild(td);
+            });
+            tbody.appendChild(tr);
+          });
+          if (val.Notes && Array.isArray(val.Notes)) {
+            val.Notes.forEach(note => {
+              const tr = document.createElement('tr');
+              const td = document.createElement('td');
+              td.colSpan = cols.length;
+              td.style.fontSize = '11px';
+              td.style.color = 'var(--text2)';
+              td.style.fontStyle = 'italic';
+              td.textContent = note;
+              tr.appendChild(td);
+              tbody.appendChild(tr);
+            });
+          }
+          table.appendChild(tbody);
+          panel.appendChild(table);
+        }
+      }
+
+      container.appendChild(panel);
+    });
+  })
+  .catch(() => {
+    document.getElementById('acContent').innerHTML = '<p class="aa-empty">Failed to load data.</p>';
+  });
+</script>
+</body>
+</html>

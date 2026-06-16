@@ -1,0 +1,112 @@
+{
+  "Double Attack Info": [
+    { "Class": "Bard", "DA Skill Cap": 79, "No AA": "27.80%", "With all DA AAs": "61.20%" },
+    { "Class": "Beastlord", "DA Skill Cap": 79, "No AA": "27.80%", "With all DA AAs": "61.20%" },
+    { "Class": "Cleric", "DA Skill Cap": 50, "No AA": "22.00%", "With all DA AAs": "48.40%" },
+    { "Class": "Druid", "DA Skill Cap": 50, "No AA": "22.00%", "With all DA AAs": "48.40%" },
+    { "Class": "Shaman", "DA Skill Cap": 50, "No AA": "22.00%", "With all DA AAs": "48.40%" },
+    { "Class": "Necromancer", "DA Skill Cap": 23, "No AA": "16.60%", "With all DA AAs": "36.50%" },
+    { "Class": "Wizard", "DA Skill Cap": 23, "No AA": "16.60%", "With all DA AAs": "36.50%" },
+    { "Class": "Magician", "DA Skill Cap": 23, "No AA": "16.60%", "With all DA AAs": "36.50%" },
+    { "Class": "Enchanter", "DA Skill Cap": 23, "No AA": "16.60%", "With all DA AAs": "36.50%" },
+    { "Class": "Monk", "DA Skill Cap": 260, "No AA": "64.00%", "Ferocity/Included": "Ferocity 6/6", "Total % Needed AFTER Ferocity": "33%" },
+    { "Class": "Warrior", "DA Skill Cap": 245, "No AA": "61.00%", "Ferocity/Included": "Ferocity 6/6", "Total % Needed AFTER Ferocity": "40%" },
+    { "Class": "Ranger", "DA Skill Cap": 245, "No AA": "61.00%", "Ferocity/Included": "Ferocity 6/6", "Total % Needed AFTER Ferocity": "40%" },
+    { "Class": "Rogue", "DA Skill Cap": 245, "No AA": "61.00%", "Ferocity/Included": "Ferocity 6/6", "Total % Needed AFTER Ferocity": "40%" },
+    { "Class": "Berserker", "DA Skill Cap": 245, "No AA": "61.00%", "Ferocity/Included": "Ferocity 6/6", "Total % Needed AFTER Ferocity": "40%" },
+    { "Class": "Paladin", "DA Skill Cap": 240, "No AA": "60.00%", "Ferocity/Included": "Ferocity 6/6", "Total % Needed AFTER Ferocity": "45%*" },
+    { "Class": "Shadow Knight", "DA Skill Cap": 240, "No AA": "60.00%", "Ferocity/Included": "Ferocity 6/6", "Total % Needed AFTER Ferocity": "45*" }
+  ],
+  "Double Attack AAs": [
+    { "AA": "Harmonious Attack", "Percent Per Rank": "3%" },
+    { "AA": "Bestial Frenzy", "Percent Per Rank": "3%" },
+    { "AA": "Knights Advantage", "Percent Per Rank": "3/6/9/20/22/24%" },
+    { "AA": "Ferocity", "Percent Per Rank": "3/6/9/20/22/24%" }
+  ],
+  "Double Attack Notes": [
+    "A note about Knight's advantage - Non knight classes can use this as a substitute for Bard/Beast as far as I can tell it only works on 2h for Knights"
+  ],
+  "Dual Wield Info": [
+    { "Class": "Bard", "Skill Cap": 245, "With Ambidexterity": "89.90%" },
+    { "Class": "Beastlord", "Skill Cap": 245, "With Ambidexterity": "89.90%" },
+    { "Class": "Cleric", "Skill Cap": 46, "With Ambidexterity": "36.80%" },
+    { "Class": "Druid", "Skill Cap": 46, "With Ambidexterity": "36.80%" },
+    { "Class": "Enchanter", "Skill Cap": 21, "With Ambidexterity": "30.10%" },
+    { "Class": "Magician", "Skill Cap": 21, "With Ambidexterity": "30.10%" },
+    { "Class": "Monk", "Skill Cap": 252, "With Ambidexterity": "91.70%" },
+    { "Class": "Necromancer", "Skill Cap": 21, "With Ambidexterity": "30.10%" },
+    { "Class": "Paladin", "Skill Cap": 100, "With Ambidexterity": "51.20%" },
+    { "Class": "Ranger", "Skill Cap": 245, "With Ambidexterity": "89.90%" },
+    { "Class": "Rogue", "Skill Cap": 245, "With Ambidexterity": "89.90%" },
+    { "Class": "Shadow Knight", "Skill Cap": 100, "With Ambidexterity": "51.20%" },
+    { "Class": "Shaman", "Skill Cap": 46, "With Ambidexterity": "36.80%" },
+    { "Class": "Warrior", "Skill Cap": 245, "With Ambidexterity": "89.90%" },
+    { "Class": "Wizard", "Skill Cap": 21, "With Ambidexterity": "30.10%" }
+  ],
+  "Flurry AAs": [
+    { "Rank": 1, "Flurry 108": "7%", "Rapid Strikes": "7%", "Lightning Strikes": "7%", "Bard Flurry 941": "7%" },
+    { "Rank": 2, "Flurry 108": "11%", "Rapid Strikes": "11%", "Lightning Strikes": "11%", "Bard Flurry 941": "11%" },
+    { "Rank": 3, "Flurry 108": "15%", "Rapid Strikes": "15%", "Lightning Strikes": "15%", "Bard Flurry 941": "15%" },
+    { "Rank": 4, "Flurry 108": "17%", "Rapid Strikes": "17%", "Lightning Strikes": "17%", "Bard Flurry 941": null },
+    { "Rank": 5, "Flurry 108": "19%", "Rapid Strikes": "19%", "Lightning Strikes": "19%", "Bard Flurry 941": null },
+    { "Rank": 6, "Flurry 108": "21%", "Rapid Strikes": "21%", "Lightning Strikes": "21%", "Bard Flurry 941": null },
+    { "Rank": 7, "Flurry 108": "23%", "Rapid Strikes": "23%", "Lightning Strikes": "23%", "Bard Flurry 941": null },
+    { "Rank": 8, "Flurry 108": "25%", "Rapid Strikes": "25%", "Lightning Strikes": "25%", "Bard Flurry 941": null },
+    { "Rank": 9, "Flurry 108": "27%", "Rapid Strikes": "27%", "Lightning Strikes": "27%", "Bard Flurry 941": null },
+    { "Rank": 10, "Flurry 108": "28%", "Rapid Strikes": "28%", "Lightning Strikes": "28%", "Bard Flurry 941": null },
+    { "Rank": 11, "Flurry 108": "29%", "Rapid Strikes": "29%", "Lightning Strikes": "29%", "Bard Flurry 941": null },
+    { "Rank": 12, "Flurry 108": "30%", "Rapid Strikes": "30%", "Lightning Strikes": "30%", "Bard Flurry 941": null },
+    { "Rank": 13, "Flurry 108": "31%", "Rapid Strikes": "31%", "Lightning Strikes": "31%", "Bard Flurry 941": null },
+    { "Rank": 14, "Flurry 108": "32%", "Rapid Strikes": "32%", "Lightning Strikes": "32%", "Bard Flurry 941": null },
+    { "Rank": 15, "Flurry 108": "33%", "Rapid Strikes": "33%", "Lightning Strikes": "33%", "Bard Flurry 941": null },
+    { "Rank": 16, "Flurry 108": "34%", "Rapid Strikes": "34%", "Lightning Strikes": "34%", "Bard Flurry 941": null },
+    { "Rank": 17, "Flurry 108": "35%", "Rapid Strikes": "35%", "Lightning Strikes": "35%", "Bard Flurry 941": null },
+    { "Rank": 18, "Flurry 108": "36%", "Rapid Strikes": "36%", "Lightning Strikes": "36%", "Bard Flurry 941": null },
+    { "Rank": 19, "Flurry 108": "37%", "Rapid Strikes": "38%", "Lightning Strikes": null, "Bard Flurry 941": null }
+  ],
+  "2 Handers Only AAs": [
+    { "Rank": 1, "Punishing Blade": "2%", "Speed of the Knight": "2%" },
+    { "Rank": 2, "Punishing Blade": "5%", "Speed of the Knight": "5%" },
+    { "Rank": 3, "Punishing Blade": "8%", "Speed of the Knight": "8%" },
+    { "Rank": 4, "Punishing Blade": "11%", "Speed of the Knight": "11%" },
+    { "Rank": 5, "Punishing Blade": "14%", "Speed of the Knight": "14%" },
+    { "Rank": 6, "Punishing Blade": "17%", "Speed of the Knight": "17%" },
+    { "Rank": 7, "Punishing Blade": "18%", "Speed of the Knight": "27%" },
+    { "Rank": 8, "Punishing Blade": "20%", "Speed of the Knight": "28%" },
+    { "Rank": 9, "Punishing Blade": "22%", "Speed of the Knight": "29%" },
+    { "Rank": 10, "Punishing Blade": "23%", "Speed of the Knight": "30%" },
+    { "Rank": 11, "Punishing Blade": "24%", "Speed of the Knight": "31%" },
+    { "Rank": 12, "Punishing Blade": "25%", "Speed of the Knight": "32%" }
+  ],
+  "2 Handers Only Notes": [
+    "Extra atk for 2h aas do not stack",
+    "these two aas do not stack together the highest % is used"
+  ],
+  "Triple Attack Info": [
+    { "Class": "Bard", "Triple Attack Cap": 0, "Chance": "Cannot fire", "BoP Increase": "20", "Chance With BoP": "Cannot fire", "BoP Increase Percent": "0%" },
+    { "Class": "Beastlord", "Triple Attack Cap": 0, "Chance": "Cannot fire", "BoP Increase": "20", "Chance With BoP": "Cannot fire", "BoP Increase Percent": "0%" },
+    { "Class": "Berserker", "Triple Attack Cap": 200, "Chance": "20%", "BoP Increase": "60", "Chance With BoP": "24%", "BoP Increase Percent": "4%" },
+    { "Class": "Monk", "Triple Attack Cap": 225, "Chance": "21%", "BoP Increase": "60", "Chance With BoP": "26%", "BoP Increase Percent": "5%" },
+    { "Class": "Paladin", "Triple Attack Cap": 50, "Chance": "5%", "BoP Increase": "35", "Chance With BoP": "9%", "BoP Increase Percent": "4%" },
+    { "Class": "Ranger", "Triple Attack Cap": 225, "Chance": "21%", "BoP Increase": "60", "Chance With BoP": "26%", "BoP Increase Percent": "5%" },
+    { "Class": "Rogue", "Triple Attack Cap": 225, "Chance": "21%", "BoP Increase": "25", "Chance With BoP": "23%", "BoP Increase Percent": "2%" },
+    { "Class": "Shadow Knight", "Triple Attack Cap": 50, "Chance": "5%", "BoP Increase": "35", "Chance With BoP": "9%", "BoP Increase Percent": "4%" },
+    { "Class": "Warrior", "Triple Attack Cap": 225, "Chance": "21%", "BoP Increase": "60", "Chance With BoP": "26%", "BoP Increase Percent": "5%" }
+  ],
+  "Technique of Master Wu": {
+    "Notes": [
+      "Works on Monk Special attacks, kick, frenzy, slam, bash and backstab",
+      "Monks try until failure, kick and backstab are limited to 2, others to 1"
+    ],
+    "Ranks": [
+      { "Rank": 1, "Practical Effect": "20% chance for at least 1 extra special attack" },
+      { "Rank": 2, "Practical Effect": "40% chance for at least 1 extra special attack" },
+      { "Rank": 3, "Practical Effect": "60% chance for at least 1 extra special attack" },
+      { "Rank": 4, "Practical Effect": "80% chance for at least 1 extra special attack" },
+      { "Rank": 5, "Practical Effect": "100% chance for at least 1 extra special attack" },
+      { "Rank": 6, "Practical Effect": "100% chance for first extra, 30% chance for second" },
+      { "Rank": 7, "Practical Effect": "100% chance for first extra, 35% chance for second" },
+      { "Rank": 8, "Practical Effect": "100% chance for first extra, 40% chance for second" }
+    ]
+  }
+}
