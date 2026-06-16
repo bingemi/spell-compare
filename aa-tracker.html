@@ -66,8 +66,9 @@
           <option value="Healing Passive">Healing Passive</option>
           <option value="Defensive">Defensive</option>
           <option value="Cures">Cures</option>
-          <option value="Other">Other</option>
-        </select>
+           <option value="Threat">Threat</option>
+           <option value="Other">Other</option>
+         </select>
         <div style="display:flex;gap:8px">
           <input type="number" id="aaTotalRanks" placeholder="Total Ranks" min="1" step="1" style="flex:1">
           <input type="number" id="aaCurrentRank" placeholder="Current Rank" min="0" step="1" style="flex:1">
@@ -328,7 +329,7 @@ function showFilter(col) {
   let values = [];
   if (col === 'class') values = CLASS_ORDER.filter(v => entries.some(e => e.class === v));
   else if (col === 'tier') values = TIER_ORDER.filter(v => entries.some(e => e.tier === v));
-  else if (col === 'type') values = ['Melee Passive','Melee Active','Healing Active','Healing Passive','Defensive','Cures','Other'].filter(v => entries.some(e => e.type === v));
+  else if (col === 'type') values = ['Melee Passive','Melee Active','Healing Active','Healing Passive','Defensive','Cures','Threat','Other'].filter(v => entries.some(e => e.type === v));
   else if (col === 'status') values = ['restricted','capped','done','partial','none'];
 
   if (!colFilters[col]) colFilters[col] = new Set();
@@ -380,7 +381,7 @@ function toggleAll(col, checked) {
     let values = [];
     if (col === 'class') values = CLASS_ORDER.filter(v => entries.some(e => e.class === v));
     else if (col === 'tier') values = TIER_ORDER.filter(v => entries.some(e => e.tier === v));
-    else if (col === 'type') values = ['Melee Passive','Melee Active','Healing Active','Healing Passive','Defensive','Cures','Other'].filter(v => entries.some(e => e.type === v));
+    else if (col === 'type') values = ['Melee Passive','Melee Active','Healing Active','Healing Passive','Defensive','Cures','Threat','Other'].filter(v => entries.some(e => e.type === v));
     else if (col === 'status') values = ['restricted','capped','done','partial','none'];
     values.forEach(v => sel.add(v));
   }

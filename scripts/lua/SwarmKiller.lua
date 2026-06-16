@@ -28,6 +28,7 @@ while true do
         mq.cmd(('/mqtarget npc radius %d zradius %d'):format(radius, zradius))
         mq.delay(200)
         mq.cmd('/assistme')
+        mq.cmd('/face')
     end
 
     mq.delay(100)

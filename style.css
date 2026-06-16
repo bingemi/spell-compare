@@ -130,6 +130,7 @@ textarea:focus { border-color: var(--info-border); }
 .badge-type-healing-passive { background:#e6f0e6; color:#2d6b2d; }
 .badge-type-defensive { background:#fff3e0; color:#9e6b1a; }
 .badge-type-cures { background:#f3e8ff; color:#6b2d9e; }
+.badge-type-threat { background:#fff1e0; color:#d84315; }
 .badge-type-other { background:#f0f0f0; color:#555; }
 @media (prefers-color-scheme: dark) {
   .badge-tier-greater { background:#1a3a1a; color:#7dcc7d; }
@@ -141,6 +142,7 @@ textarea:focus { border-color: var(--info-border); }
   .badge-type-healing-passive { background:#1a3a2a; color:#7db58d; }
   .badge-type-defensive { background:#3a2a1a; color:#cc9e5c; }
   .badge-type-cures { background:#2a1a3a; color:#ab7dcc; }
+  .badge-type-threat { background:#3a1a00; color:#ff8a65; }
   .badge-type-other { background:#2a2a2a; color:#999; }
 }
   .badge-tier-greater { background:#1a3a1a; color:#7dcc7d; }
