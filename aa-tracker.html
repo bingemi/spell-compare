@@ -58,6 +58,16 @@
           <option value="Exalted">Exalted</option>
           <option value="Ascendant">Ascendant</option>
         </select>
+        <select id="aaType">
+          <option value="">-- Type --</option>
+          <option value="Melee Passive">Melee Passive</option>
+          <option value="Melee Active">Melee Active</option>
+          <option value="Healing Active">Healing Active</option>
+          <option value="Healing Passive">Healing Passive</option>
+          <option value="Defensive">Defensive</option>
+          <option value="Cures">Cures</option>
+          <option value="Other">Other</option>
+        </select>
         <div style="display:flex;gap:8px">
           <input type="number" id="aaTotalRanks" placeholder="Total Ranks" min="1" step="1" style="flex:1">
           <input type="number" id="aaCurrentRank" placeholder="Current Rank" min="0" step="1" style="flex:1">
@@ -91,10 +101,10 @@
             <th class="th-sort" onclick="toggleSort('name')">Name<i class="ti ti-arrows-sort" id="s-name" style="font-size:12px;margin-left:4px;vertical-align:-1px"></i></th>
             <th class="col-class th-sort" onclick="toggleSort('class')">Class<i class="ti ti-arrows-sort" id="s-class" style="font-size:12px;margin-left:4px;vertical-align:-1px"></i><i class="ti ti-filter" id="f-class" onclick="event.stopPropagation();showFilter('class')" style="font-size:11px;margin-left:2px;vertical-align:-1px;cursor:pointer;opacity:0.5"></i></th>
             <th class="col-tier th-sort" onclick="toggleSort('tier')">Tier<i class="ti ti-arrows-sort" id="s-tier" style="font-size:12px;margin-left:4px;vertical-align:-1px"></i><i class="ti ti-filter" id="f-tier" onclick="event.stopPropagation();showFilter('tier')" style="font-size:11px;margin-left:2px;vertical-align:-1px;cursor:pointer;opacity:0.5"></i></th>
+            <th class="col-type th-sort" onclick="toggleSort('type')">Type<i class="ti ti-arrows-sort" id="s-type" style="font-size:12px;margin-left:4px;vertical-align:-1px"></i><i class="ti ti-filter" id="f-type" onclick="event.stopPropagation();showFilter('type')" style="font-size:11px;margin-left:2px;vertical-align:-1px;cursor:pointer;opacity:0.5"></i></th>
             <th class="col-rank th-sort" onclick="toggleSort('totalRanks')">Total<i class="ti ti-arrows-sort" id="s-totalRanks" style="font-size:12px;margin-left:4px;vertical-align:-1px"></i></th>
             <th class="col-rank th-sort" onclick="toggleSort('currentRank')">Rank<i class="ti ti-arrows-sort" id="s-currentRank" style="font-size:12px;margin-left:4px;vertical-align:-1px"></i></th>
             <th class="th-sort" onclick="toggleSort('status')">Status<i class="ti ti-arrows-sort" id="s-status" style="font-size:12px;margin-left:4px;vertical-align:-1px"></i><i class="ti ti-filter" id="f-status" onclick="event.stopPropagation();showFilter('status')" style="font-size:11px;margin-left:2px;vertical-align:-1px;cursor:pointer;opacity:0.4"></i></th>
-            <th>Notes</th>
             <th class="col-actions"></th>
           </tr>
         </thead>
@@ -318,6 +328,7 @@ function showFilter(col) {
   let values = [];
   if (col === 'class') values = CLASS_ORDER.filter(v => entries.some(e => e.class === v));
   else if (col === 'tier') values = TIER_ORDER.filter(v => entries.some(e => e.tier === v));
+  else if (col === 'type') values = ['Melee Passive','Melee Active','Healing Active','Healing Passive','Defensive','Cures','Other'].filter(v => entries.some(e => e.type === v));
   else if (col === 'status') values = ['restricted','capped','done','partial','none'];
 
   if (!colFilters[col]) colFilters[col] = new Set();
@@ -369,6 +380,7 @@ function toggleAll(col, checked) {
     let values = [];
     if (col === 'class') values = CLASS_ORDER.filter(v => entries.some(e => e.class === v));
     else if (col === 'tier') values = TIER_ORDER.filter(v => entries.some(e => e.tier === v));
+    else if (col === 'type') values = ['Melee Passive','Melee Active','Healing Active','Healing Passive','Defensive','Cures','Other'].filter(v => entries.some(e => e.type === v));
     else if (col === 'status') values = ['restricted','capped','done','partial','none'];
     values.forEach(v => sel.add(v));
   }
@@ -443,6 +455,7 @@ function renderTable() {
     if (!sel || sel.size === 0) return;
     if (col === 'class') filtered = filtered.filter(e => sel.has(e.class));
     else if (col === 'tier') filtered = filtered.filter(e => sel.has(e.tier));
+    else if (col === 'type') filtered = filtered.filter(e => sel.has(e.type));
     else if (col === 'status') filtered = filtered.filter(e => sel.has(getStatus(e)));
   });
 
@@ -453,6 +466,7 @@ function renderTable() {
       if (sortCol === 'name') { va = a.name.toLowerCase(); vb = b.name.toLowerCase(); }
       else if (sortCol === 'class') { va = a.class || ''; vb = b.class || ''; }
       else if (sortCol === 'tier') { va = a.tier || ''; vb = b.tier || ''; }
+      else if (sortCol === 'type') { va = a.type || ''; vb = b.type || ''; }
       else if (sortCol === 'totalRanks') { va = a.totalRanks; vb = b.totalRanks; }
       else if (sortCol === 'currentRank') { va = a.currentRank; vb = b.currentRank; }
       else if (sortCol === 'status') { va = getStatus(a); vb = getStatus(b); }
@@ -507,13 +521,13 @@ function renderTable() {
       st === 'partial' ? '<span class="badge-status badge-status-progress">In Progress</span>' :
       '<span class="badge-status badge-status-none">Not Started</span>';
     return '<tr>' +
-      '<td><strong>' + esc(e.name) + '</strong></td>' +
+      '<td><strong>' + esc(e.name) + '</strong>' + (e.notes ? '<br><span class="aa-notes">' + esc(e.notes) + '</span>' : '') + '</td>' +
       '<td>' + (e.class || '-') + '</td>' +
       '<td>' + (e.tier ? '<span class="badge-tier badge-tier-' + e.tier.toLowerCase() + '">' + e.tier + '</span>' : '-') + '</td>' +
+      '<td>' + (e.type ? '<span class="badge-type badge-type-' + e.type.toLowerCase().replace(/ /g, '-') + '">' + e.type + '</span>' : '-') + '</td>' +
       '<td>' + e.totalRanks + '</td>' +
       '<td>' + e.currentRank + '</td>' +
       '<td style="white-space:nowrap">' + stBadge + '</td>' +
-      '<td>' + (e.notes ? esc(e.notes) : '') + '</td>' +
       '<td class="col-actions">' +
         '<button class="aa-btn-icon" onclick="editAA(\'' + e.id + '\')" title="Edit"><i class="ti ti-pencil"></i></button>' +
         '<button class="aa-btn-icon" onclick="deleteAA(\'' + e.id + '\')" title="Delete" style="color:var(--danger-text)"><i class="ti ti-trash"></i></button>' +
@@ -533,6 +547,7 @@ function getFormData() {
     name: document.getElementById('aaName').value.trim(),
     class: document.getElementById('aaClass').value,
     tier: document.getElementById('aaTier').value,
+    type: document.getElementById('aaType').value,
     totalRanks: Number(document.getElementById('aaTotalRanks').value) || 1,
     currentRank: Number(document.getElementById('aaCurrentRank').value) || 0,
     capped: document.getElementById('aaCapped').checked,
@@ -557,6 +572,7 @@ function clearForm() {
   document.getElementById('aaName').value = '';
   document.getElementById('aaClass').value = '';
   document.getElementById('aaTier').value = '';
+  document.getElementById('aaType').value = '';
   document.getElementById('aaTotalRanks').value = '';
   document.getElementById('aaCurrentRank').value = '';
   document.getElementById('aaCapped').checked = false;
@@ -594,6 +610,7 @@ function editAA(id) {
   document.getElementById('aaName').value = entry.name;
   document.getElementById('aaClass').value = entry.class || '';
   document.getElementById('aaTier').value = entry.tier || '';
+  document.getElementById('aaType').value = entry.type || '';
   document.getElementById('aaTotalRanks').value = entry.totalRanks;
   document.getElementById('aaCurrentRank').value = entry.currentRank;
   document.getElementById('aaCapped').checked = !!entry.capped;

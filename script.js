@@ -73,7 +73,7 @@ document.getElementById('classSelect').addEventListener('change', function () {
     return;
   }
   info.textContent = 'Loading...';
-  fetch(`spell-reference/${cls}_spells.txt`)
+  fetch(`reference/spell/${cls}_spells.txt`)
     .then(r => {
       if (!r.ok) throw new Error('File not found');
       return r.text();
@@ -87,7 +87,7 @@ document.getElementById('classSelect').addEventListener('change', function () {
       loadedMaster = [];
       expansions = {};
       renderChips();
-      info.textContent = 'Failed to load spell list. Make sure spell-reference/ is accessible.';
+      info.textContent = 'Failed to load spell list. Make sure reference/spell/ is accessible.';
     });
 });
 

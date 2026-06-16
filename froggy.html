@@ -25,7 +25,7 @@
 function loadFroggyLocations() {
   const el = document.getElementById('froggyContent');
   if (el.dataset.loaded) return;
-  fetch('froggy-reference/froggy-locations.json')
+  fetch('reference/froggy/froggy-locations.json')
     .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
     .then(data => {
       el.innerHTML = Object.entries(data).map(([zone, locations]) =>
