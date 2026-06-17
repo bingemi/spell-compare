@@ -23,12 +23,13 @@ while true do
     if targetID and targetID ~= 0 and targetID ~= lastTargetID then
         mq.delay(100)
         mq.cmd('/assistme')
+		mq.cmd('/face fast')
         lastTargetID = targetID
     elseif not targetID or targetID == 0 then
         mq.cmd(('/mqtarget npc radius %d zradius %d'):format(radius, zradius))
         mq.delay(200)
         mq.cmd('/assistme')
-        mq.cmd('/face')
+		mq.cmd('/face fast')
     end
 
     mq.delay(100)
