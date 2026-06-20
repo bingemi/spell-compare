@@ -1,0 +1,2 @@
+Moves all bots forward for 2 seconds
+/dgge /multiline ; /keypress FORWARD hold ; /timed 20 /keypress FORWARD
