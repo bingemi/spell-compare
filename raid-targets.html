@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Raid Targets</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+
+  <nav class="nav-bar">
+    <a class="nav-link" href="index.html"><i class="ti ti-wand" aria-hidden="true"></i>Missing Spells</a>
+    <a class="nav-link" href="aa-tracker.html"><i class="ti ti-arrow-up-circle" aria-hidden="true"></i>AA Tracker</a>
+    <a class="nav-link" href="froggy.html"><i class="ti ti-map-pin" aria-hidden="true"></i>Froggy Locations</a>
+    <a class="nav-link" href="augments.html"><i class="ti ti-diamond" aria-hidden="true"></i>Augments</a>
+    <a class="nav-link" href="attack-cap.html"><i class="ti ti-sword" aria-hidden="true"></i>Attack Cap</a>
+    <a class="nav-link active" href="raid-targets.html"><i class="ti ti-skull" aria-hidden="true"></i>Raid Targets</a>
+  </nav>
+
+  <h1><i class="ti ti-skull" aria-hidden="true" style="font-size:20px;vertical-align:-2px;margin-right:6px"></i>Raid Targets</h1>
+  <p class="subtitle">Track your era-based progression</p>
+
+  <div class="char-bar" id="eraBar"></div>
+
+  <div class="card">
+    <div class="panel-section">
+      <div class="panel-label" style="display:flex;align-items:center;gap:8px">
+        <i class="ti ti-list" aria-hidden="true" style="font-size:14px;vertical-align:-1px;margin-right:4px"></i>Target List
+      </div>
+      <table class="aa-table" id="targetTable">
+        <thead>
+          <tr>
+            <th style="width: 60px; text-align: center;">Killed</th>
+            <th>Target Name</th>
+            <th>Zone</th>
+          </tr>
+        </thead>
+        <tbody id="targetTableBody"></tbody>
+      </table>
+      <div class="aa-empty" id="targetEmpty" style="display:none">No targets configured for this era yet.</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const STORAGE_KEY = 'raid-tracker-kills';
+let raidData = {};
+let currentEra = '';
+let killedTargets = {};
+
+function init() {
+  // Load saved kills from local storage
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) killedTargets = JSON.parse(raw) || {};
+  } catch (e) {
+    killedTargets = {};
+  }
+
+  // Fetch target definitions
+  fetch('reference/raid-targets/raid-targets.json')
+    .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(data => {
+      raidData = data;
+      const eras = Object.keys(raidData);
+      if (eras.length > 0) {
+        currentEra = eras[0];
+      }
+      renderEraBar();
+      renderTable();
+    })
+    .catch(err => {
+      document.getElementById('targetTableBody').innerHTML = '';
+      const empty = document.getElementById('targetEmpty');
+      empty.style.display = 'block';
+      empty.textContent = 'Failed to load raid targets: ' + err.message;
+    });
+}
+
+function switchEra(era) {
+  if (era === currentEra) return;
+  currentEra = era;
+  renderEraBar();
+  renderTable();
+}
+
+function renderEraBar() {
+  const bar = document.getElementById('eraBar');
+  const eras = Object.keys(raidData);
+  let html = '<div class="char-pills">';
+  
+  html += eras.map(era =>
+    `<span class="char-pill ${era === currentEra ? 'active' : ''}">
+      <span onclick="switchEra('${era.replace(/'/g, "\\'")}')">${era}</span>
+    </span>`
+  ).join('');
+
+  html += `<span style="margin-left:auto;display:inline-flex;gap:4px">
+    <button class="aa-btn" onclick="exportData()" style="font-size:11px;padding:4px 10px" title="Export all kills">
+      <i class="ti ti-download" style="font-size:13px;vertical-align:-1px;margin-right:2px"></i>Export Data
+    </button>
+    <button class="aa-btn" onclick="document.getElementById('importInput').click()" style="font-size:11px;padding:4px 10px" title="Import kills">
+      <i class="ti ti-upload" style="font-size:13px;vertical-align:-1px;margin-right:2px"></i>Import Data
+    </button>
+  </span>`;
+  
+  html += '</div>';
+  html += '<input type="file" id="importInput" accept=".json" hidden onchange="importData(event)">';
+  bar.innerHTML = html;
+}
+
+function renderTable() {
+  const tbody = document.getElementById('targetTableBody');
+  const empty = document.getElementById('targetEmpty');
+  const table = document.getElementById('targetTable');
+
+  if (!currentEra || !raidData[currentEra] || raidData[currentEra].length === 0) {
+    tbody.innerHTML = '';
+    table.style.display = 'none';
+    empty.style.display = 'block';
+    return;
+  }
+
+  table.style.display = 'table';
+  empty.style.display = 'none';
+
+  tbody.innerHTML = raidData[currentEra].map(mob => {
+    const isChecked = killedTargets[mob.id] ? 'checked' : '';
+    return `<tr>
+      <td style="text-align: center;">
+        <input type="checkbox" id="${mob.id}" ${isChecked} onchange="toggleKill('${mob.id}')" style="accent-color:var(--info-text); cursor:pointer; width:16px; height:16px;">
+      </td>
+      <td><strong><label for="${mob.id}" style="cursor:pointer">${mob.target}</label></strong></td>
+      <td>${mob.zone}</td>
+    </tr>`;
+  }).join('');
+}
+
+function toggleKill(id) {
+  if (killedTargets[id]) {
+    delete killedTargets[id];
+  } else {
+    killedTargets[id] = true;
+  }
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(killedTargets));
+}
+
+function exportData() {
+  const blob = new Blob([JSON.stringify(killedTargets, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'raid-tracker-export.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (typeof data !== 'object') throw new Error();
+      
+      killedTargets = data;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(killedTargets));
+      renderTable();
+      alert('Raid data imported successfully.');
+    } catch {
+      alert('Failed to parse file. Please ensure it is a valid export.');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+// Start everything up
+init();
+</script>
+</body>
+</html>
