@@ -24,23 +24,9 @@
 
   <div class="char-bar" id="eraBar"></div>
 
-  <div class="card">
-    <div class="panel-section">
-      <div class="panel-label" style="display:flex;align-items:center;gap:8px">
-        <i class="ti ti-list" aria-hidden="true" style="font-size:14px;vertical-align:-1px;margin-right:4px"></i>Target List
-      </div>
-      <table class="aa-table" id="targetTable">
-        <thead>
-          <tr>
-            <th style="width: 60px; text-align: center;">Killed</th>
-            <th>Target Name</th>
-            <th>Zone</th>
-          </tr>
-        </thead>
-        <tbody id="targetTableBody"></tbody>
-      </table>
-      <div class="aa-empty" id="targetEmpty" style="display:none">No targets configured for this era yet.</div>
-    </div>
+  <div class="card" id="mainCard">
+    <div id="targetListContainer"></div>
+    <div class="aa-empty" id="targetEmpty" style="display:none">No targets configured for this era yet.</div>
   </div>
 
 </div>
@@ -52,7 +38,6 @@ let currentEra = '';
 let killedTargets = {};
 
 function init() {
-  // Load saved kills from local storage
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) killedTargets = JSON.parse(raw) || {};
@@ -60,7 +45,6 @@ function init() {
     killedTargets = {};
   }
 
-  // Fetch target definitions
   fetch('reference/raid-targets/raid-targets.json')
     .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
     .then(data => {
@@ -73,7 +57,7 @@ function init() {
       renderTable();
     })
     .catch(err => {
-      document.getElementById('targetTableBody').innerHTML = '';
+      document.getElementById('targetListContainer').innerHTML = '';
       const empty = document.getElementById('targetEmpty');
       empty.style.display = 'block';
       empty.textContent = 'Failed to load raid targets: ' + err.message;
@@ -113,30 +97,75 @@ function renderEraBar() {
 }
 
 function renderTable() {
-  const tbody = document.getElementById('targetTableBody');
+  const container = document.getElementById('targetListContainer');
   const empty = document.getElementById('targetEmpty');
-  const table = document.getElementById('targetTable');
 
   if (!currentEra || !raidData[currentEra] || raidData[currentEra].length === 0) {
-    tbody.innerHTML = '';
-    table.style.display = 'none';
+    container.innerHTML = '';
     empty.style.display = 'block';
     return;
   }
 
-  table.style.display = 'table';
   empty.style.display = 'none';
 
-  tbody.innerHTML = raidData[currentEra].map(mob => {
-    const isChecked = killedTargets[mob.id] ? 'checked' : '';
-    return `<tr>
-      <td style="text-align: center;">
-        <input type="checkbox" id="${mob.id}" ${isChecked} onchange="toggleKill('${mob.id}')" style="accent-color:var(--info-text); cursor:pointer; width:16px; height:16px;">
-      </td>
-      <td><strong><label for="${mob.id}" style="cursor:pointer">${mob.target}</label></strong></td>
-      <td>${mob.zone}</td>
-    </tr>`;
-  }).join('');
+  // Group targets by their category
+  const targets = raidData[currentEra];
+  const grouped = {};
+  
+  targets.forEach(mob => {
+    // Fallback to zone if category isn't defined
+    const groupName = mob.category || mob.zone; 
+    if (!grouped[groupName]) grouped[groupName] = [];
+    grouped[groupName].push(mob);
+  });
+
+  let html = '';
+  
+  for (const [category, mobs] of Object.entries(grouped)) {
+    // If the category doesn't match the zone for any mob inside it (like "Single Targets"),
+    // we should show the Zone column. Otherwise, hide it for a cleaner look.
+    const showZoneColumn = mobs.some(m => m.category !== m.zone);
+
+    html += `
+      <div class="panel-section" style="margin-bottom: 24px; border-bottom: 1px solid var(--border); padding-bottom: 12px;">
+        <div class="panel-label" style="display:flex;align-items:center;gap:8px; margin-bottom:12px;">
+          <i class="ti ti-map-pin" aria-hidden="true" style="font-size:14px;vertical-align:-1px;margin-right:4px"></i>${category}
+        </div>
+        <table class="aa-table">
+          <thead>
+            <tr>
+              <th style="width: 60px; text-align: center;">Killed</th>
+              <th>Target Name</th>
+              ${showZoneColumn ? '<th>Zone</th>' : ''}
+            </tr>
+          </thead>
+          <tbody>
+    `;
+    
+    mobs.forEach(mob => {
+      const isChecked = killedTargets[mob.id] ? 'checked' : '';
+      html += `
+            <tr>
+              <td style="text-align: center;">
+                <input type="checkbox" id="${mob.id}" ${isChecked} onchange="toggleKill('${mob.id}')" style="accent-color:var(--info-text); cursor:pointer; width:16px; height:16px;">
+              </td>
+              <td><strong><label for="${mob.id}" style="cursor:pointer; display:block;">${mob.target}</label></strong></td>
+              ${showZoneColumn ? `<td>${mob.zone}</td>` : ''}
+            </tr>
+      `;
+    });
+
+    html += `
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  // Remove the border-bottom from the very last panel-section so it looks clean inside the card
+  html = html.replace(/<div class="panel-section" style="(.*?); border-bottom: 1px solid var\(--border\); padding-bottom: 12px;">([^<]*)$/, '<div class="panel-section" style="$1; padding-bottom: 0px;">$2');
+
+  container.innerHTML = html;
 }
 
 function toggleKill(id) {
@@ -178,7 +207,6 @@ function importData(event) {
   event.target.value = '';
 }
 
-// Start everything up
 init();
 </script>
 </body>
