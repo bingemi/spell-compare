@@ -63,11 +63,11 @@ local liminalMap = {
 -- Translated from previous whisper texts to standard EQ Zone Shortnames
 local druidWizMap = {
     ["northkarana"] = "North Karana",
-    ["tox"] = "Toxxulia Forest",
+    ["toxxulia"] = "Toxxulia Forest",
     ["butcher"] = "Butcherblock",
-    ["qrg"] = "Surefall Glade",
+    ["qeytoqrg"] = "Surefall Glade",
     ["wcommons"] = "West Commonlands",
-    ["ecommons"] = "East Commonlands",
+    ["ecommons"] = "West Commonlands",
     ["lavastorm"] = "Lavastorm",
     ["steamfont"] = "Steamfont",
     ["sro"] = "South Ro",

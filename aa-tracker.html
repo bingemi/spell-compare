@@ -373,11 +373,9 @@ function showFilter(col) {
 function toggleFilter(col, value, checked) {
   if (!colFilters[col]) colFilters[col] = new Set();
   const sel = colFilters[col];
-  sel.delete('__none__');
   if (checked) sel.add(value);
   else sel.delete(value);
   renderTable();
-  updateFilterCheckboxes(col);
 }
 
 function toggleAll(col, checked) {
@@ -385,22 +383,17 @@ function toggleAll(col, checked) {
   const sel = colFilters[col];
   sel.clear();
   if (!checked) {
-    sel.add('__none__');
+    // mark all as explicitly excluded
+    const entries = getEntries();
+    let values = [];
+    if (col === 'class') values = CLASS_ORDER.filter(v => entries.some(e => e.class === v));
+    else if (col === 'tier') values = TIER_ORDER.filter(v => entries.some(e => e.tier === v));
+    else if (col === 'type') values = ['Melee Passive','Melee Active','Healing Active','Healing Passive','Defensive','Cures','Threat','Other'].filter(v => entries.some(e => e.type === v));
+    else if (col === 'status') values = ['restricted','capped','done','partial','none'];
+    values.forEach(v => sel.add(v));
   }
   renderTable();
-  updateFilterCheckboxes(col);
-}
-
-function updateFilterCheckboxes(col) {
-  const dropdown = document.getElementById('filterDropdown');
-  if (dropdown.style.display === 'none' || dropdown.dataset.col !== col) return;
-  const sel = colFilters[col] || new Set();
-  const allChecked = sel.size === 0;
-  const allCb = dropdown.querySelector('.fd-all input');
-  if (allCb) allCb.checked = allChecked;
-  dropdown.querySelectorAll('.fd-row input').forEach(cb => {
-    cb.checked = allChecked || sel.has(cb.value);
-  });
+  showFilter(col);
 }
 
 function renderSummary() {
