@@ -84,7 +84,7 @@
     { "id": "l19", "target": "Shei Vinitras", "zone": "Akheva Ruins", "category": "Single Targets" },
     { "id": "l20", "target": "Doomshade", "zone": "Umbral Plains", "category": "Single Targets" },
     { "id": "l21", "target": "Rumblecrush", "zone": "Umbral Plains", "category": "Single Targets" },
-    { "id": "l22", "target": "Grieg Veneficus", "zone": "Grieg's End", "category": "Single Targets" }
+    { "id": "l22", "target": "Grieg Veneficus", "zone": "Grieg's End", "category": "Single Targets" },
     { "id": "l23", "target": "Khati Sha the Twisted", "zone": "The Acrylia Caverns", "category": "Single Targets" }
   ],
   "Planes of Power": [

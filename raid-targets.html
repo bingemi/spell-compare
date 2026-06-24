@@ -90,7 +90,6 @@ function renderEraBar() {
       <i class="ti ti-upload" style="font-size:13px;vertical-align:-1px;margin-right:2px"></i>Import Data
     </button>
   </span>`;
-  
   html += '</div>';
   html += '<input type="file" id="importInput" accept=".json" hidden onchange="importData(event)">';
   bar.innerHTML = html;
@@ -121,6 +120,10 @@ function renderTable() {
 
   let html = '';
   
+  for (const mobs of Object.values(grouped)) {
+    mobs.sort((a, b) => a.target.localeCompare(b.target));
+  }
+
   for (const [category, mobs] of Object.entries(grouped)) {
     // If the category doesn't match the zone for any mob inside it (like "Single Targets"),
     // we should show the Zone column. Otherwise, hide it for a cleaner look.
