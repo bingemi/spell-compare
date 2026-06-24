@@ -147,12 +147,15 @@ function renderTable() {
     
     mobs.forEach(mob => {
       const isChecked = killedTargets[mob.id] ? 'checked' : '';
+      const labelStyle = killedTargets[mob.id]
+        ? 'color:#e57373; text-decoration:line-through'
+        : '';
       html += `
             <tr>
               <td style="text-align: center;">
                 <input type="checkbox" id="${mob.id}" ${isChecked} onchange="toggleKill('${mob.id}')" style="accent-color:var(--info-text); cursor:pointer; width:16px; height:16px;">
               </td>
-              <td><strong><label for="${mob.id}" style="cursor:pointer; display:block;">${mob.target}</label></strong></td>
+              <td><strong><label for="${mob.id}" style="cursor:pointer">${killedTargets[mob.id] ? '<i class="ti ti-skull" style="font-size:13px;vertical-align:-1px;margin-right:4px"></i>' : ''}<span style="${labelStyle}">${mob.target}</span></label></strong></td>
               ${showZoneColumn ? `<td>${mob.zone}</td>` : ''}
             </tr>
       `;
@@ -178,6 +181,7 @@ function toggleKill(id) {
     killedTargets[id] = true;
   }
   localStorage.setItem(STORAGE_KEY, JSON.stringify(killedTargets));
+  renderTable();
 }
 
 function exportData() {
