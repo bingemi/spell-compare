@@ -60,7 +60,7 @@
     { "id": "v24", "target": "Jorlleag", "zone": "North Temple of Veeshan", "category": "North Temple of Veeshan" },
     { "id": "v25", "target": "Lord Vyemm", "zone": "North Temple of Veeshan", "category": "North Temple of Veeshan" },
     { "id": "v26", "target": "Vulak`Aerr", "zone": "North Temple of Veeshan", "category": "North Temple of Veeshan" },
-    { "id": "v27", "target": "Dozekar the Cursed", "zone": "East Temple of Veeshan", "category": "East Temple of Veeshan" }
+    { "id": "v30", "target": "Dozekar the Cursed", "zone": "East Temple of Veeshan", "category": "East Temple of Veeshan" }
   ],
   "Luclin": [
     { "id": "l16", "target": "Burrower Parasite", "zone": "The Deep", "category": "Single Targets" },
