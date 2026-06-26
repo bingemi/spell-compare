@@ -1,5 +1,5 @@
 {
-    "Stat Augments": [
+    "LDoN Stat Augments": [
         {
             "Type": "Shard of Might (Ascendant)",
             "Primary Stat": "Strength",
@@ -57,7 +57,7 @@
             "Peerless": "Bad"
         }
     ],
-    "Resistance Augments": [
+    "LDoN Resistance Augments": [
         {
             "Type": "Pearl of Magical Warding (Ascendant)",
             "Primary Stat": "Magic Resist",
@@ -97,6 +97,58 @@
             "Pristine": "Bad",
             "Immaculate": "Good",
             "Peerless": "Good"
+        }
+    ],
+    "Luclin (Slot 7)": [
+        {
+            "Augment": "Heart of the Sky (Ascendant)",
+            "URL": "https://ascendant.drucilog.uk/items/780020",
+            "Hitpoints": 66,
+            "Location": "Acrylia Caverns"
+        },
+        {
+            "Augment": "Shard of Growing Power (Ascendant)",
+            "URL": "https://ascendant.drucilog.uk/items/780396",
+            "Hitpoints": 58,
+            "Location": "Ssraeshza Temple"
+        },
+        {
+            "Augment": "Coagulated Darkness (Ascendant)",
+            "URL": "https://ascendant.drucilog.uk/items/779646",
+            "Hitpoints": 32,
+            "Location": "The Deep"
+        },
+        {
+            "Augment": "Shard of Minor Power (Ascendant)",
+            "URL": "https://ascendant.drucilog.uk/items/780392",
+            "Hitpoints": 32,
+            "Location": "Mons Letalis"
+        },
+        {
+            "Augment": "Snakeskin Gem (Ascendant)",
+            "URL": "https://ascendant.drucilog.uk/items/751910",
+            "Hitpoints": 24,
+            "Location": "Ssraeshza Temple"
+        },
+        {
+            "Augment": "Glinting Sunstone (Ascendant)",
+            "URL": "https://ascendant.drucilog.uk/items/779638",
+            "Hitpoints": 24,
+            "Location": "The Dawnshroud Peaks"
+        }
+    ],
+    "Planes of Power (Slot 7)": [
+        {
+            "Augment": "Corrupted Blue Diamond Amulet (Ascendant)",
+            "URL": "https://ascendant.drucilog.uk/items/779894",
+            "Hitpoints": 83,
+            "Location": "Bastion of Thunder"
+        },
+        {
+            "Augment": "Diaku Armor Fragment (Ascendant)",
+            "URL": "https://ascendant.drucilog.uk/items/751912",
+            "Hitpoints": 24,
+            "Location": "Drunder, the Fortress of Zek"
         }
     ]
 }

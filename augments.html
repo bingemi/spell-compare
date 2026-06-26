@@ -12,6 +12,9 @@
 .aug-table th { font-size:11px; font-weight:500; color:var(--text2); text-transform:uppercase; letter-spacing:.05em; text-align:left; padding:6px 8px; border-bottom:0.5px solid var(--border); }
 .aug-table td { padding:8px; border-bottom:0.5px solid var(--border); }
 .aug-table tr:last-child td { border-bottom:none; }
+.aug-table td a { color:inherit; text-decoration:none; }
+.aug-table td a:hover { text-decoration:underline; }
+.aug-linkwrap { display:inline-flex; align-items:center; gap:3px; cursor:pointer; }
 .dot-good, .dot-bad { display:inline-block; width:12px; height:12px; border-radius:50%; }
 .dot-good { background:#2d7d2d; }
 .dot-bad { background:#c0392b; }
@@ -34,7 +37,7 @@
   </nav>
 
   <h1><i class="ti ti-diamond" aria-hidden="true" style="font-size:20px;vertical-align:-2px;margin-right:6px"></i>Augment Reference</h1>
-  <p class="subtitle">Ascendant augments — green = good, red = bad</p>
+  <p class="subtitle">LDoN augments — green = good, red = bad</p>
 
   <div class="card">
     <div class="panel-section">
@@ -56,7 +59,9 @@ fetch('reference/augments/augments.json')
       if (!entries.length) return;
 
       const colKeys = Object.keys(entries[0]);
-      const isGoodBad = colKeys.slice(2).every(k => entries[0][k] === 'Good' || entries[0][k] === 'Bad');
+      const hiddenKeys = ['URL'];
+      const displayKeys = colKeys.filter(k => !hiddenKeys.includes(k));
+      const isGoodBad = colKeys.length > 2 && colKeys.slice(2).every(k => entries[0][k] === 'Good' || entries[0][k] === 'Bad');
 
       const panel = document.createElement('div');
       panel.innerHTML = '<div class="panel-label" style="margin-bottom:10px">' + category + '</div>';
@@ -66,7 +71,7 @@ fetch('reference/augments/augments.json')
 
       const thead = document.createElement('thead');
       const hr = document.createElement('tr');
-      colKeys.forEach(k => {
+      displayKeys.forEach(k => {
         const th = document.createElement('th');
         th.textContent = k;
         hr.appendChild(th);
@@ -77,13 +82,26 @@ fetch('reference/augments/augments.json')
       const tbody = document.createElement('tbody');
       entries.forEach(entry => {
         const tr = document.createElement('tr');
-        colKeys.forEach(k => {
+        displayKeys.forEach(k => {
           const td = document.createElement('td');
           const val = entry[k];
           if (colKeys.indexOf(k) >= 2 && isGoodBad && (val === 'Good' || val === 'Bad')) {
             const dot = document.createElement('span');
             dot.className = val === 'Good' ? 'dot-good' : 'dot-bad';
             td.appendChild(dot);
+          } else if (entry.URL && displayKeys.indexOf(k) === 0) {
+            const wrap = document.createElement('span');
+            wrap.className = 'aug-linkwrap';
+            const a = document.createElement('a');
+            a.href = entry.URL;
+            a.textContent = val;
+            wrap.appendChild(a);
+            const icon = document.createElement('i');
+            icon.className = 'ti ti-external-link';
+            icon.style.fontSize = '12px';
+            icon.style.verticalAlign = '-1px';
+            wrap.appendChild(icon);
+            td.appendChild(wrap);
           } else {
             td.textContent = val;
           }
