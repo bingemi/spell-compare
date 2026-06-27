@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LDoN Gear</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="style.css">
+<style>
+.filters { display:flex; flex-direction:column; gap:12px; }
+.filter-row { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.filter-label { font-size:11px; font-weight:500; color:var(--text2); text-transform:uppercase; letter-spacing:.05em; min-width:40px; }
+.search-input { flex:1; min-width:160px; padding:7px 10px; font-size:13px; font-family:var(--font); border:0.5px solid var(--border2); border-radius:var(--radius-md); background:var(--bg2); color:var(--text); outline:none; }
+.search-input:focus { border-color:var(--info-border); }
+.cost-input { width:80px; padding:7px 8px; font-size:13px; font-family:var(--font); border:0.5px solid var(--border2); border-radius:var(--radius-md); background:var(--bg2); color:var(--text); outline:none; }
+.cost-input:focus { border-color:var(--info-border); }
+.cost-sep { color:var(--text3); font-size:13px; }
+.results-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+.result-count { font-size:13px; color:var(--text2); }
+.ldon-table { width:100%; border-collapse:collapse; font-size:13px; }
+.ldon-table th { font-size:11px; font-weight:500; color:var(--text2); text-transform:uppercase; letter-spacing:.05em; text-align:left; padding:6px 8px; border-bottom:0.5px solid var(--border); white-space:nowrap; }
+.ldon-table td { padding:8px; border-bottom:0.5px solid var(--border); vertical-align:top; }
+.ldon-table tr:last-child td { border-bottom:none; }
+.ldon-table td a { color:inherit; text-decoration:none; }
+.ldon-table td a:hover { text-decoration:underline; }
+.stats-cell { font-size:11px; color:var(--text2); line-height:1.5; }
+.stat-val { color:var(--text); }
+.class-cell { font-size:11px; }
+.slot-badge, .aug-badge, .type-badge { display:inline-block; font-size:10px; padding:1px 6px; border-radius:4px; font-weight:500; white-space:nowrap; }
+.type-badge-item { background:#e8f0fe; color:#1a5c9e; }
+.type-badge-spell { background:#f0e6ff; color:#6b2d9e; }
+.aug-badge-yes { background:#e6f7e6; color:#2d7d2d; }
+.aug-badge { background:var(--bg2); color:var(--text3); }
+.slot-chip { font-size:10px; padding:1px 5px; border-radius:3px; background:var(--bg2); color:var(--text2); }
+.lore-badge { display:inline-block; font-size:9px; padding:1px 5px; border-radius:3px; background:#fde8e8; color:#9e2d2d; font-weight:500; }
+.notrade-badge { display:inline-block; font-size:9px; padding:1px 5px; border-radius:3px; background:#fff3e0; color:#9e6b1a; font-weight:500; }
+@media (prefers-color-scheme:dark) {
+  .type-badge-item { background:#1a2a3a; color:#7dabcc; }
+  .type-badge-spell { background:#2a1a3a; color:#ab7dcc; }
+  .aug-badge-yes { background:#1a3a1a; color:#7dcc7d; }
+  .lore-badge { background:#3a1a1a; color:#cc7d7d; }
+  .notrade-badge { background:#3a2a1a; color:#cc9e5c; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <nav class="nav-bar">
+    <a class="nav-link" href="index.html"><i class="ti ti-wand" aria-hidden="true"></i>Missing Spells</a>
+    <a class="nav-link" href="aa-tracker.html"><i class="ti ti-arrow-up-circle" aria-hidden="true"></i>AA Tracker</a>
+    <a class="nav-link" href="froggy.html"><i class="ti ti-map-pin" aria-hidden="true"></i>Froggy Locations</a>
+    <a class="nav-link" href="augments.html"><i class="ti ti-diamond" aria-hidden="true"></i>Augments</a>
+    <a class="nav-link" href="attack-cap.html"><i class="ti ti-sword" aria-hidden="true"></i>Attack Cap</a>
+    <a class="nav-link" href="raid-targets.html"><i class="ti ti-skull" aria-hidden="true"></i>Raid Targets</a>
+    <a class="nav-link active" href="ldon.html"><i class="ti ti-backpack" aria-hidden="true"></i>LDoN Gear</a>
+  </nav>
+
+  <h1><i class="ti ti-backpack" aria-hidden="true" style="font-size:20px;vertical-align:-2px;margin-right:6px"></i>LDoN Gear</h1>
+  <p class="subtitle">Lost Dungeons of Norrath adventure rewards</p>
+
+  <div class="card">
+    <div class="panel-section">
+      <div class="filters" id="filters"></div>
+    </div>
+  </div>
+
+  <div class="card" id="resultsCard">
+    <div class="panel-section">
+      <div class="results-header">
+        <span class="result-count" id="resultCount"></span>
+      </div>
+      <div id="ldonContent"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+fetch('reference/ldon/ldon-gear.json')
+  .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+  .then(data => {
+    const ALL_CLASSES = ['All','War','Clr','Pal','Rng','Shd','Dru','Mnk','Brd','Rog','Ber','Bst','Nec','Wiz','Mag','Enc','Shm'];
+    const ALL_SLOTS = ['All','Chest','Feet','Finger','Head','Wrist','Waist','Arm','Leg','Hand','Ear','Face','Neck','Shoulder','Back','Range','Primary','Secondary'];
+    const ALL_DUNGEONS = ['All','Guk','Mir','Mmc','Ruj','Tak'];
+    const ALL_AUGS = ['All','None','Aug2','Aug3','Aug4','Aug6','Aug7','Aug8'];
+    const STAT_LABELS = {AC:'AC',Str:'Str',Dex:'Dex',Sta:'Sta',Cha:'Cha',Wis:'Wis',Int:'Int',Agi:'Agi',HP:'HP',Mana:'Mana',FR:'FR',CR:'CR',MR:'MR',DR:'DR',PR:'PR',Dmg:'Dmg',Dly:'Dly',Wgt:'Wgt'};
+
+    let filters = {
+      search: '',
+      dungeon: 'All',
+      type: 'All',
+      classes: [],
+      slots: [],
+      aug: 'All',
+      costMin: '',
+      costMax: ''
+    };
+
+    function matches(item) {
+      if (filters.search) {
+        const q = filters.search.toLowerCase();
+        if (!item.name.toLowerCase().includes(q)) return false;
+      }
+      if (filters.dungeon !== 'All' && item.dungeon !== filters.dungeon) return false;
+      if (filters.type !== 'All' && item.type !== filters.type) return false;
+      if (filters.classes.length > 0) {
+        const itemClasses = item.classes || [];
+        if (itemClasses.includes('All')) { /* matches any class filter */ }
+        else if (!filters.classes.some(c => itemClasses.includes(c))) return false;
+      }
+      if (filters.slots.length > 0) {
+        const itemSlots = item.slots || [];
+        if (!filters.slots.some(s => itemSlots.includes(s))) return false;
+      }
+      if (filters.aug !== 'All') {
+        const itemAug = item.aug || 'None';
+        if (filters.aug === 'None' && itemAug !== 'None') return false;
+        if (filters.aug !== 'None' && itemAug !== filters.aug) return false;
+      }
+      if (filters.costMin !== '') {
+        if ((item.cost ?? 0) < parseInt(filters.costMin)) return false;
+      }
+      if (filters.costMax !== '') {
+        if ((item.cost ?? 0) > parseInt(filters.costMax)) return false;
+      }
+      return true;
+    }
+
+    function esc(s) {
+      const d = document.createElement('div');
+      d.textContent = s;
+      return d.innerHTML;
+    }
+
+    function formatStats(item) {
+      if (item.type === 'spell' || !item.stats) return '';
+      const stats = item.stats;
+      const parts = [];
+      for (const [k, v] of Object.entries(STAT_LABELS)) {
+        if (stats[k] != null && stats[k] !== 0) {
+          parts.push(v + ' <span class="stat-val">' + stats[k] + '</span>');
+        }
+      }
+      if (stats.Type) {
+        parts.unshift('<span class="stat-val">' + esc(stats.Type) + '</span>');
+      }
+      return parts.join(' &middot; ');
+    }
+
+    function render() {
+      const filtered = data.filter(matches);
+      const count = document.getElementById('resultCount');
+      count.textContent = filtered.length + ' / ' + data.length + ' items';
+
+      const container = document.getElementById('ldonContent');
+      if (filtered.length === 0) {
+        container.innerHTML = '<p class="aa-empty">No items match the selected filters.</p>';
+        return;
+      }
+
+      let html = '<table class="ldon-table"><thead><tr>' +
+        '<th>Name</th><th>Dungeon</th><th>Cost</th><th>Type</th><th>Classes</th><th>Slots</th><th>Aug</th><th>Stats</th>' +
+        '</tr></thead><tbody>';
+
+      filtered.forEach(item => {
+        const classes = (item.classes || []).join(', ');
+        const slots = (item.slots || []).join(', ');
+        const isItem = item.type === 'item';
+        const isSpell = item.type === 'spell';
+        const augLabel = item.aug ? '<span class="aug-badge-yes">' + esc(item.aug) + '</span>' : '<span class="aug-badge">&mdash;</span>';
+
+        let nameHtml = esc(item.name);
+        if (isSpell && item.link) {
+          nameHtml = '<a href="' + esc(item.link) + '" target="_blank">' + nameHtml + ' <i class="ti ti-external-link" style="font-size:11px;vertical-align:-1px"></i></a>';
+        }
+
+        let flagsHtml = '';
+        if (isItem) {
+          if (item.is_lore) flagsHtml += '<span class="lore-badge">LORE</span> ';
+          if (item.is_notlore) flagsHtml += '<span class="notrade-badge">No Trade</span> ';
+        }
+
+        let extraHtml = '';
+        if (item.effect) extraHtml += '<div style="font-size:11px;color:var(--warning-text);margin-top:2px">Effect: ' + esc(item.effect) + '</div>';
+        if (item.restrictions && item.restrictions.length) extraHtml += '<div style="font-size:10px;color:var(--text3)">' + item.restrictions.join(', ') + '</div>';
+
+        let statsHtml = '';
+        if (isItem) {
+          statsHtml = '<div class="stats-cell">';
+          const formatted = formatStats(item);
+          if (formatted) statsHtml += formatted;
+          if (item.augment_types && item.augment_types.length) {
+            statsHtml += '<div style="margin-top:2px;font-size:10px;color:var(--text3)">Aug slots: ' + item.augment_types.join(', ') + '</div>';
+          }
+          statsHtml += '</div>';
+        } else {
+          statsHtml = '<span style="color:var(--text3);font-size:11px">' + (item.classes || []).join(', ') + '</span>';
+        }
+
+        html += '<tr>' +
+          '<td><strong>' + nameHtml + '</strong>' + flagsHtml + extraHtml + '</td>' +
+          '<td>' + esc(item.dungeon) + '</td>' +
+          '<td>' + (item.cost ?? '&mdash;') + '</td>' +
+          '<td><span class="type-badge ' + (isItem ? 'type-badge-item' : 'type-badge-spell') + '">' + (isItem ? 'Item' : 'Spell') + '</span></td>' +
+          '<td class="class-cell">' + esc(classes) + '</td>' +
+          '<td style="font-size:11px">' + esc(slots) + '</td>' +
+          '<td>' + augLabel + '</td>' +
+          '<td>' + statsHtml + '</td>' +
+          '</tr>';
+      });
+
+      html += '</tbody></table>';
+      container.innerHTML = html;
+    }
+
+    function makeChips(opts, current, onChange) {
+      const div = document.createElement('div');
+      div.className = 'exp-chips';
+      opts.forEach(val => {
+        const span = document.createElement('span');
+        span.className = 'chip' + (val === current ? ' active' : '');
+        span.textContent = val;
+        span.onclick = () => { onChange(val); };
+        div.appendChild(span);
+      });
+      return div;
+    }
+
+    function makeMultiChips(opts, selected, onChange) {
+      const div = document.createElement('div');
+      div.className = 'exp-chips';
+      opts.forEach(val => {
+        const span = document.createElement('span');
+        span.className = 'chip' + (selected.includes(val) ? ' active' : '');
+        span.textContent = val;
+        span.onclick = () => {
+          if (val === 'All') {
+            onChange([]);
+          } else {
+            const idx = selected.indexOf(val);
+            const next = idx === -1 ? [...selected, val] : selected.filter(x => x !== val);
+            onChange(next);
+          }
+        };
+        div.appendChild(span);
+      });
+      return div;
+    }
+
+    function setupFilters() {
+      const container = document.getElementById('filters');
+
+      // Search
+      const searchRow = document.createElement('div');
+      searchRow.className = 'filter-row';
+      const searchInput = document.createElement('input');
+      searchInput.type = 'text';
+      searchInput.className = 'search-input';
+      searchInput.placeholder = 'Search by name...';
+      searchInput.oninput = () => { filters.search = searchInput.value; render(); };
+      searchRow.appendChild(searchInput);
+      container.appendChild(searchRow);
+
+      // Dungeon
+      const dunRow = document.createElement('div');
+      dunRow.className = 'filter-row';
+      const dunLabel = document.createElement('span');
+      dunLabel.className = 'filter-label';
+      dunLabel.textContent = 'Dungeon';
+      dunRow.appendChild(dunLabel);
+      dunRow.appendChild(makeChips(ALL_DUNGEONS, filters.dungeon, v => { filters.dungeon = v; render(); }));
+      container.appendChild(dunRow);
+
+      // Type
+      const typeRow = document.createElement('div');
+      typeRow.className = 'filter-row';
+      const typeLabel = document.createElement('span');
+      typeLabel.className = 'filter-label';
+      typeLabel.textContent = 'Type';
+      typeRow.appendChild(typeLabel);
+      typeRow.appendChild(makeChips(['All','item','spell'], filters.type, v => { filters.type = v; render(); }));
+      container.appendChild(typeRow);
+
+      // Class
+      const clsRow = document.createElement('div');
+      clsRow.className = 'filter-row';
+      const clsLabel = document.createElement('span');
+      clsLabel.className = 'filter-label';
+      clsLabel.textContent = 'Class';
+      clsRow.appendChild(clsLabel);
+      clsRow.appendChild(makeMultiChips(ALL_CLASSES, filters.classes, v => { filters.classes = v; render(); }));
+      container.appendChild(clsRow);
+
+      // Slot
+      const slotRow = document.createElement('div');
+      slotRow.className = 'filter-row';
+      const slotLabel = document.createElement('span');
+      slotLabel.className = 'filter-label';
+      slotLabel.textContent = 'Slot';
+      slotRow.appendChild(slotLabel);
+      slotRow.appendChild(makeMultiChips(ALL_SLOTS, filters.slots, v => { filters.slots = v; render(); }));
+      container.appendChild(slotRow);
+
+      // Aug
+      const augRow = document.createElement('div');
+      augRow.className = 'filter-row';
+      const augLabel = document.createElement('span');
+      augLabel.className = 'filter-label';
+      augLabel.textContent = 'Aug';
+      augRow.appendChild(augLabel);
+      augRow.appendChild(makeChips(ALL_AUGS, filters.aug, v => { filters.aug = v; render(); }));
+      container.appendChild(augRow);
+
+      // Cost range
+      const costRow = document.createElement('div');
+      costRow.className = 'filter-row';
+      const costLabel = document.createElement('span');
+      costLabel.className = 'filter-label';
+      costLabel.textContent = 'Cost';
+      costRow.appendChild(costLabel);
+      const costMin = document.createElement('input');
+      costMin.type = 'number';
+      costMin.className = 'cost-input';
+      costMin.placeholder = 'Min';
+      costMin.oninput = () => { filters.costMin = costMin.value; render(); };
+      costRow.appendChild(costMin);
+      const sep = document.createElement('span');
+      sep.className = 'cost-sep';
+      sep.textContent = '—';
+      costRow.appendChild(sep);
+      const costMax = document.createElement('input');
+      costMax.type = 'number';
+      costMax.className = 'cost-input';
+      costMax.placeholder = 'Max';
+      costMax.oninput = () => { filters.costMax = costMax.value; render(); };
+      costRow.appendChild(costMax);
+      container.appendChild(costRow);
+    }
+
+    setupFilters();
+    render();
+  })
+  .catch(err => {
+    document.getElementById('ldonContent').innerHTML = '<p class="aa-empty">Failed to load LDoN gear data: ' + err.message + '</p>';
+  });
+</script>
+</body>
+</html>
