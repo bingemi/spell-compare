@@ -18,7 +18,10 @@
 .results-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
 .result-count { font-size:13px; color:var(--text2); }
 .ldon-table { width:100%; border-collapse:collapse; font-size:13px; }
-.ldon-table th { font-size:11px; font-weight:500; color:var(--text2); text-transform:uppercase; letter-spacing:.05em; text-align:left; padding:6px 8px; border-bottom:0.5px solid var(--border); white-space:nowrap; }
+.ldon-table th { font-size:11px; font-weight:500; color:var(--text2); text-transform:uppercase; letter-spacing:.05em; text-align:left; padding:6px 8px; border-bottom:0.5px solid var(--border); white-space:nowrap; cursor:pointer; user-select:none; }
+.ldon-table th:hover { color:var(--text); }
+.ldon-table th .sort-arrow { font-size:10px; margin-left:3px; }
+.ldon-table th .sort-arrow.dim { opacity:0.25; }
 .ldon-table td { padding:8px; border-bottom:0.5px solid var(--border); vertical-align:top; }
 .ldon-table tr:last-child td { border-bottom:none; }
 .ldon-table td a { color:inherit; text-decoration:none; }
@@ -84,7 +87,62 @@ fetch('reference/ldon/ldon-gear.json')
     const ALL_SLOTS = ['All','Chest','Feet','Finger','Head','Wrist','Waist','Arm','Leg','Hand','Ear','Face','Neck','Shoulder','Back','Range','Primary','Secondary'];
     const ALL_DUNGEONS = ['All','Guk','Mir','Mmc','Ruj','Tak'];
     const ALL_AUGS = ['All','None','Aug2','Aug3','Aug4','Aug6','Aug7','Aug8'];
-    const STAT_LABELS = {AC:'AC',Str:'Str',Dex:'Dex',Sta:'Sta',Cha:'Cha',Wis:'Wis',Int:'Int',Agi:'Agi',HP:'HP',Mana:'Mana',FR:'FR',CR:'CR',MR:'MR',DR:'DR',PR:'PR',Dmg:'Dmg',Dly:'Dly',Wgt:'Wgt'};
+
+    function getItemType(item) {
+      return item.name.startsWith('Spell:') ? 'spell' : 'item';
+    }
+
+    function normalizeStats(raw) {
+      if (!raw) return {};
+      const s = {...raw};
+      if (s.Hp != null && s.HP == null) { s.HP = s.Hp; }
+      delete s.Hp;
+      if (s.DMG != null && s.Dmg == null) { s.Dmg = s.DMG; }
+      delete s.DMG;
+      if (s.AGI != null && s.Agi == null) { s.Agi = s.AGI; }
+      delete s.AGI;
+      if (s.Smg != null) delete s.Smg;
+      if (s.Ag != null && s.Agi == null) { s.Agi = s.Ag; }
+      delete s.Ag;
+      if (s.Afi != null) delete s.Afi;
+      if (s.ta != null) delete s.ta;
+      if (s.CRC != null && s.CR == null) { s.CR = s.CRC; }
+      delete s.CRC;
+      if (s.PosionDMG != null && s.PoisonDMG == null) { s.PoisonDMG = s.PosionDMG; }
+      delete s.PosionDMG;
+      if (s.Restictions != null && s.Restrictions == null) { s.Restrictions = s.Restictions; }
+      delete s.Restictions;
+      if (s.Restriction != null && s.Restrictions == null) { s.Restrictions = s.Restriction; }
+      delete s.Restriction;
+      if (s.Rng != null && s.Range == null) { s.Range = s.Rng; }
+      delete s.Rng;
+      if (s.MinDly != null && s.MinDelay == null) { s.MinDelay = s.MinDly; }
+      if (s.SvF != null && s.FR == null) { s.FR = s.SvF; }
+      delete s.SvF;
+      if (s.DisDMG != null && s.DiseaseDMG == null) { s.DiseaseDMG = s.DisDMG; }
+      delete s.DisDMG;
+      if (s.FireDmg != null && s.FireDMG == null) { s.FireDMG = s.FireDmg; }
+      delete s.FireDmg;
+      if (s.ColdDmg != null && s.ColdDMG == null) { s.ColdDMG = s.ColdDmg; }
+      delete s.ColdDmg;
+      return s;
+    }
+
+    const STAT_ORDER = [
+      'AC', 'Str', 'Dex', 'Sta', 'Cha', 'Wis', 'Int', 'Agi',
+      'HP', 'Mana',
+      'FR', 'CR', 'MR', 'DR', 'PR',
+      'Dmg', 'Dly', 'Wgt',
+      'Range', 'SkillMod', 'MinDelay', 'BaneDmg',
+      'FireDMG', 'ColdDMG', 'PoisonDMG', 'DiseaseDMG',
+    ];
+
+    function cleanName(name) {
+      let n = name;
+      if (n.includes('Lore,')) n = n.substring(0, n.indexOf('Lore,'));
+      if (n.includes('Notlore,')) n = n.substring(0, n.indexOf('Notlore,'));
+      return n.replace(/,?\s*$/, '').trim();
+    }
 
     let filters = {
       search: '',
@@ -97,13 +155,41 @@ fetch('reference/ldon/ldon-gear.json')
       costMax: ''
     };
 
+    let sortBy = 'cost';
+    let sortDir = 'desc';
+
+    function getSortVal(item) {
+      switch (sortBy) {
+        case 'name': return cleanName(item.name).toLowerCase();
+        case 'dungeon': return item.dungeon || '';
+        case 'cost': return item.cost ?? -1;
+        case 'type': return getItemType(item);
+        case 'classes': return (item.classes || []).join(', ');
+        case 'slots': return (item.slots || []).join(', ');
+        case 'aug': return item.aug || '';
+        default: return '';
+      }
+    }
+
+    function sortData(items) {
+      const sorted = [...items];
+      sorted.sort((a, b) => {
+        const va = getSortVal(a);
+        const vb = getSortVal(b);
+        if (va < vb) return sortDir === 'asc' ? -1 : 1;
+        if (va > vb) return sortDir === 'asc' ? 1 : -1;
+        return 0;
+      });
+      return sorted;
+    }
+
     function matches(item) {
       if (filters.search) {
         const q = filters.search.toLowerCase();
         if (!item.name.toLowerCase().includes(q)) return false;
       }
       if (filters.dungeon !== 'All' && item.dungeon !== filters.dungeon) return false;
-      if (filters.type !== 'All' && item.type !== filters.type) return false;
+      if (filters.type !== 'All' && getItemType(item) !== filters.type) return false;
       if (filters.classes.length > 0) {
         const itemClasses = item.classes || [];
         if (itemClasses.includes('All')) { /* matches any class filter */ }
@@ -134,22 +220,34 @@ fetch('reference/ldon/ldon-gear.json')
     }
 
     function formatStats(item) {
-      if (item.type === 'spell' || !item.stats) return '';
-      const stats = item.stats;
+      if (getItemType(item) === 'spell' || !item.stats) return '';
+      const stats = normalizeStats(item.stats);
       const parts = [];
-      for (const [k, v] of Object.entries(STAT_LABELS)) {
-        if (stats[k] != null && stats[k] !== 0) {
-          parts.push(v + ' <span class="stat-val">' + stats[k] + '</span>');
+      if (stats.Type) {
+        parts.push('<span class="stat-val">' + esc(stats.Type) + '</span>');
+      }
+      for (const key of STAT_ORDER) {
+        if (stats[key] != null && stats[key] !== 0 && stats[key] !== '') {
+          parts.push(key + ' <span class="stat-val">' + esc(String(stats[key])) + '</span>');
         }
       }
-      if (stats.Type) {
-        parts.unshift('<span class="stat-val">' + esc(stats.Type) + '</span>');
+      if (stats.Mod) {
+        parts.push('Mod: <span class="stat-val">' + esc(stats.Mod) + '</span>');
       }
       return parts.join(' &middot; ');
     }
 
+    const SORT_COLS = ['name','dungeon','cost','type','classes','slots','aug'];
+
+    function thHtml(key, label) {
+      const active = sortBy === key;
+      const arrow = active ? (sortDir === 'asc' ? '&#9650;' : '&#9660;') : '&#9650;';
+      const dim = active ? '' : ' dim';
+      return '<th data-sort="' + key + '">' + label + '<span class="sort-arrow' + dim + '">' + arrow + '</span></th>';
+    }
+
     function render() {
-      const filtered = data.filter(matches);
+      const filtered = sortData(data.filter(matches));
       const count = document.getElementById('resultCount');
       count.textContent = filtered.length + ' / ' + data.length + ' items';
 
@@ -159,39 +257,41 @@ fetch('reference/ldon/ldon-gear.json')
         return;
       }
 
-      let html = '<table class="ldon-table"><thead><tr>' +
-        '<th>Name</th><th>Dungeon</th><th>Cost</th><th>Type</th><th>Classes</th><th>Slots</th><th>Aug</th><th>Stats</th>' +
+      let html = '<table class="ldon-table" id="ldonTable"><thead><tr>' +
+        thHtml('name', 'Name') + thHtml('dungeon', 'Dungeon') + thHtml('cost', 'Cost') + thHtml('type', 'Type') +
+        thHtml('classes', 'Classes') + thHtml('slots', 'Slots') + thHtml('aug', 'Aug') +
+        '<th>Stats</th>' +
         '</tr></thead><tbody>';
 
       filtered.forEach(item => {
         const classes = (item.classes || []).join(', ');
         const slots = (item.slots || []).join(', ');
-        const isItem = item.type === 'item';
-        const isSpell = item.type === 'spell';
+        const isItem = getItemType(item) === 'item';
+        const isSpell = getItemType(item) === 'spell';
         const augLabel = item.aug ? '<span class="aug-badge-yes">' + esc(item.aug) + '</span>' : '<span class="aug-badge">&mdash;</span>';
 
-        let nameHtml = esc(item.name);
-        if (isSpell && item.link) {
-          nameHtml = '<a href="' + esc(item.link) + '" target="_blank">' + nameHtml + ' <i class="ti ti-external-link" style="font-size:11px;vertical-align:-1px"></i></a>';
-        }
+        const hasLore = item.name.includes('Lore,');
+        const displayName = cleanName(item.name);
+        let nameHtml = esc(displayName);
 
         let flagsHtml = '';
         if (isItem) {
-          if (item.is_lore) flagsHtml += '<span class="lore-badge">LORE</span> ';
-          if (item.is_notlore) flagsHtml += '<span class="notrade-badge">No Trade</span> ';
+          if (hasLore) flagsHtml += '<span class="lore-badge">LORE</span> ';
         }
 
+        const stats = item.stats || {};
         let extraHtml = '';
-        if (item.effect) extraHtml += '<div style="font-size:11px;color:var(--warning-text);margin-top:2px">Effect: ' + esc(item.effect) + '</div>';
-        if (item.restrictions && item.restrictions.length) extraHtml += '<div style="font-size:10px;color:var(--text3)">' + item.restrictions.join(', ') + '</div>';
+        if (stats.Effect) extraHtml += '<div style="font-size:11px;color:var(--warning-text);margin-top:2px">Effect: ' + esc(stats.Effect) + '</div>';
+        if (stats.Restrictions) extraHtml += '<div style="font-size:10px;color:var(--text3)">' + esc(stats.Restrictions) + '</div>';
 
         let statsHtml = '';
         if (isItem) {
           statsHtml = '<div class="stats-cell">';
           const formatted = formatStats(item);
           if (formatted) statsHtml += formatted;
-          if (item.augment_types && item.augment_types.length) {
-            statsHtml += '<div style="margin-top:2px;font-size:10px;color:var(--text3)">Aug slots: ' + item.augment_types.join(', ') + '</div>';
+          const augSlots = stats['Augment Slots'];
+          if (augSlots && augSlots.length) {
+            statsHtml += '<div style="margin-top:2px;font-size:10px;color:var(--text3)">Aug slots: ' + augSlots.join(', ') + '</div>';
           }
           statsHtml += '</div>';
         } else {
@@ -212,9 +312,23 @@ fetch('reference/ldon/ldon-gear.json')
 
       html += '</tbody></table>';
       container.innerHTML = html;
+
+      const table = document.getElementById('ldonTable');
+      table.onclick = function(e) {
+        const th = e.target.closest('th');
+        if (!th || !th.dataset.sort) return;
+        const key = th.dataset.sort;
+        if (sortBy === key) {
+          sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+        } else {
+          sortBy = key;
+          sortDir = 'asc';
+        }
+        render();
+      };
     }
 
-    function makeChips(opts, current, onChange) {
+    function renderChips(container, opts, current, onChange) {
       const div = document.createElement('div');
       div.className = 'exp-chips';
       opts.forEach(val => {
@@ -224,10 +338,11 @@ fetch('reference/ldon/ldon-gear.json')
         span.onclick = () => { onChange(val); };
         div.appendChild(span);
       });
-      return div;
+      container.innerHTML = '';
+      container.appendChild(div);
     }
 
-    function makeMultiChips(opts, selected, onChange) {
+    function renderMultiChips(container, opts, selected, onChange) {
       const div = document.createElement('div');
       div.className = 'exp-chips';
       opts.forEach(val => {
@@ -245,22 +360,57 @@ fetch('reference/ldon/ldon-gear.json')
         };
         div.appendChild(span);
       });
-      return div;
+      container.innerHTML = '';
+      container.appendChild(div);
+    }
+
+    function rebuildFilters() {
+      renderChips(dunChips, ALL_DUNGEONS, filters.dungeon, v => { filters.dungeon = v; rebuildFilters(); render(); });
+      renderChips(typeChips, ['All','item','spell'], filters.type, v => { filters.type = v; rebuildFilters(); render(); });
+      renderMultiChips(clsChips, ALL_CLASSES, filters.classes, v => { filters.classes = v; rebuildFilters(); render(); });
+      renderMultiChips(slotChips, ALL_SLOTS, filters.slots, v => { filters.slots = v; rebuildFilters(); render(); });
+      renderChips(augChips, ALL_AUGS, filters.aug, v => { filters.aug = v; rebuildFilters(); render(); });
+    }
+
+    let dunChips, typeChips, clsChips, slotChips, augChips;
+    let searchInput, costMin, costMax;
+
+    function resetFilters() {
+      filters.search = '';
+      filters.dungeon = 'All';
+      filters.type = 'All';
+      filters.classes = [];
+      filters.slots = [];
+      filters.aug = 'All';
+      filters.costMin = '';
+      filters.costMax = '';
+      sortBy = 'cost';
+      sortDir = 'desc';
+      searchInput.value = '';
+      costMin.value = '';
+      costMax.value = '';
+      rebuildFilters();
+      render();
     }
 
     function setupFilters() {
       const container = document.getElementById('filters');
 
-      // Search
-      const searchRow = document.createElement('div');
-      searchRow.className = 'filter-row';
-      const searchInput = document.createElement('input');
+      // Search + Reset row
+      const topRow = document.createElement('div');
+      topRow.className = 'filter-row';
+      searchInput = document.createElement('input');
       searchInput.type = 'text';
       searchInput.className = 'search-input';
       searchInput.placeholder = 'Search by name...';
       searchInput.oninput = () => { filters.search = searchInput.value; render(); };
-      searchRow.appendChild(searchInput);
-      container.appendChild(searchRow);
+      topRow.appendChild(searchInput);
+      const resetBtn = document.createElement('button');
+      resetBtn.className = 'aa-btn';
+      resetBtn.innerHTML = '<i class="ti ti-refresh" style="font-size:14px;vertical-align:-1px;margin-right:3px"></i>Reset';
+      resetBtn.onclick = resetFilters;
+      topRow.appendChild(resetBtn);
+      container.appendChild(topRow);
 
       // Dungeon
       const dunRow = document.createElement('div');
@@ -269,7 +419,9 @@ fetch('reference/ldon/ldon-gear.json')
       dunLabel.className = 'filter-label';
       dunLabel.textContent = 'Dungeon';
       dunRow.appendChild(dunLabel);
-      dunRow.appendChild(makeChips(ALL_DUNGEONS, filters.dungeon, v => { filters.dungeon = v; render(); }));
+      dunChips = document.createElement('div');
+      dunChips.className = 'exp-chips';
+      dunRow.appendChild(dunChips);
       container.appendChild(dunRow);
 
       // Type
@@ -279,7 +431,9 @@ fetch('reference/ldon/ldon-gear.json')
       typeLabel.className = 'filter-label';
       typeLabel.textContent = 'Type';
       typeRow.appendChild(typeLabel);
-      typeRow.appendChild(makeChips(['All','item','spell'], filters.type, v => { filters.type = v; render(); }));
+      typeChips = document.createElement('div');
+      typeChips.className = 'exp-chips';
+      typeRow.appendChild(typeChips);
       container.appendChild(typeRow);
 
       // Class
@@ -289,7 +443,9 @@ fetch('reference/ldon/ldon-gear.json')
       clsLabel.className = 'filter-label';
       clsLabel.textContent = 'Class';
       clsRow.appendChild(clsLabel);
-      clsRow.appendChild(makeMultiChips(ALL_CLASSES, filters.classes, v => { filters.classes = v; render(); }));
+      clsChips = document.createElement('div');
+      clsChips.className = 'exp-chips';
+      clsRow.appendChild(clsChips);
       container.appendChild(clsRow);
 
       // Slot
@@ -299,7 +455,9 @@ fetch('reference/ldon/ldon-gear.json')
       slotLabel.className = 'filter-label';
       slotLabel.textContent = 'Slot';
       slotRow.appendChild(slotLabel);
-      slotRow.appendChild(makeMultiChips(ALL_SLOTS, filters.slots, v => { filters.slots = v; render(); }));
+      slotChips = document.createElement('div');
+      slotChips.className = 'exp-chips';
+      slotRow.appendChild(slotChips);
       container.appendChild(slotRow);
 
       // Aug
@@ -309,7 +467,9 @@ fetch('reference/ldon/ldon-gear.json')
       augLabel.className = 'filter-label';
       augLabel.textContent = 'Aug';
       augRow.appendChild(augLabel);
-      augRow.appendChild(makeChips(ALL_AUGS, filters.aug, v => { filters.aug = v; render(); }));
+      augChips = document.createElement('div');
+      augChips.className = 'exp-chips';
+      augRow.appendChild(augChips);
       container.appendChild(augRow);
 
       // Cost range
@@ -319,7 +479,7 @@ fetch('reference/ldon/ldon-gear.json')
       costLabel.className = 'filter-label';
       costLabel.textContent = 'Cost';
       costRow.appendChild(costLabel);
-      const costMin = document.createElement('input');
+      costMin = document.createElement('input');
       costMin.type = 'number';
       costMin.className = 'cost-input';
       costMin.placeholder = 'Min';
@@ -329,13 +489,15 @@ fetch('reference/ldon/ldon-gear.json')
       sep.className = 'cost-sep';
       sep.textContent = '—';
       costRow.appendChild(sep);
-      const costMax = document.createElement('input');
+      costMax = document.createElement('input');
       costMax.type = 'number';
       costMax.className = 'cost-input';
       costMax.placeholder = 'Max';
       costMax.oninput = () => { filters.costMax = costMax.value; render(); };
       costRow.appendChild(costMax);
       container.appendChild(costRow);
+
+      rebuildFilters();
     }
 
     setupFilters();
