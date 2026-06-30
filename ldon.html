@@ -10,11 +10,11 @@
 .filters { display:flex; flex-direction:column; gap:12px; }
 .filter-row { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 .filter-label { font-size:11px; font-weight:500; color:var(--text2); text-transform:uppercase; letter-spacing:.05em; min-width:40px; }
-.search-input { flex:1; min-width:160px; padding:7px 10px; font-size:13px; font-family:var(--font); border:0.5px solid var(--border2); border-radius:var(--radius-md); background:var(--bg2); color:var(--text); outline:none; }
+.search-input { flex:1; min-width:160px; padding:4px 10px; font-size:12px; font-family:var(--font); border:0.5px solid var(--border2); border-radius:var(--radius-md); background:var(--bg2); color:var(--text); outline:none; }
 .search-input:focus { border-color:var(--info-border); }
-.cost-input { width:80px; padding:7px 8px; font-size:13px; font-family:var(--font); border:0.5px solid var(--border2); border-radius:var(--radius-md); background:var(--bg2); color:var(--text); outline:none; }
+.cost-input { width:76px; padding:2px 8px; font-size:12px; font-family:var(--font); border:0.5px solid var(--border2); border-radius:var(--radius-md); background:var(--bg2); color:var(--text); outline:none; }
 .cost-input:focus { border-color:var(--info-border); }
-.cost-sep { color:var(--text3); font-size:13px; }
+.cost-sep { color:var(--text3); font-size:11px; }
 .results-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
 .result-count { font-size:13px; color:var(--text2); }
 .ldon-table { width:100%; border-collapse:collapse; font-size:13px; }
@@ -26,16 +26,18 @@
 .ldon-table tr:last-child td { border-bottom:none; }
 .ldon-table td a { color:inherit; text-decoration:none; }
 .ldon-table td a:hover { text-decoration:underline; }
-.stats-cell { font-size:11px; color:var(--text2); line-height:1.5; }
+.stats-cell { font-size:12px; color:var(--text2); line-height:1.5; }
 .stat-val { color:var(--text); }
-.class-cell { font-size:11px; }
-.slot-badge, .aug-badge, .type-badge { display:inline-block; font-size:10px; padding:1px 6px; border-radius:4px; font-weight:500; white-space:nowrap; }
+.stat-heroic { color:#c8a415; font-weight:500; }
+.class-cell { font-size:12px; }
+.slot-badge, .aug-badge, .type-badge { display:inline-block; font-size:12px; padding:1px 7px; border-radius:4px; font-weight:500; white-space:nowrap; }
 .type-badge-item { background:#e8f0fe; color:#1a5c9e; }
 .type-badge-spell { background:#f0e6ff; color:#6b2d9e; }
 .aug-badge-yes { background:#e6f7e6; color:#2d7d2d; }
 .aug-badge { background:var(--bg2); color:var(--text3); }
-.slot-chip { font-size:10px; padding:1px 5px; border-radius:3px; background:var(--bg2); color:var(--text2); }
+.slot-badge { background:var(--bg2); color:var(--text2); }
 .lore-badge { display:inline-block; font-size:9px; padding:1px 5px; border-radius:3px; background:#fde8e8; color:#9e2d2d; font-weight:500; }
+#filters .aa-btn { font-size:12px; padding:1px 8px; }
 .notrade-badge { display:inline-block; font-size:9px; padding:1px 5px; border-radius:3px; background:#fff3e0; color:#9e6b1a; font-weight:500; }
 @media (prefers-color-scheme:dark) {
   .type-badge-item { background:#1a2a3a; color:#7dabcc; }
@@ -87,6 +89,7 @@ fetch('reference/ldon/ldon-gear.json')
     const ALL_SLOTS = ['All','Chest','Feet','Finger','Head','Wrist','Waist','Arm','Leg','Hand','Ear','Face','Neck','Shoulder','Back','Range','Primary','Secondary'];
     const ALL_DUNGEONS = ['All','Guk','Mir','Mmc','Ruj','Tak'];
     const ALL_AUGS = ['All','None','Aug2','Aug3','Aug4','Aug6','Aug7','Aug8'];
+    const ALL_STATS_FILTER = ['All','Attack','SpellDmg','HealAmt','Shielding','SpellShield','StrikeThrough','StunResist','Avoidance','Accuracy','Regen','Heroic'];
 
     function getItemType(item) {
       return item.name.startsWith('Spell:') ? 'spell' : 'item';
@@ -128,13 +131,26 @@ fetch('reference/ldon/ldon-gear.json')
       return s;
     }
 
+    const HEROIC_MAP = {
+      'Str': 'HeroicStr',
+      'Sta': 'HeroicSta',
+      'Dex': 'HeroicDex',
+      'Agi': 'HeroicAgi',
+      'Wis': 'HeroicWis',
+      'Int': 'HeroicInt',
+      'Cha': 'HeroicCha',
+    };
+
     const STAT_ORDER = [
       'AC', 'Str', 'Dex', 'Sta', 'Cha', 'Wis', 'Int', 'Agi',
       'HP', 'Mana',
       'FR', 'CR', 'MR', 'DR', 'PR',
-      'Dmg', 'Dly', 'Wgt',
+      'Damage', 'Delay', 'Dmg', 'Dly', 'Wgt',
       'Range', 'SkillMod', 'MinDelay', 'BaneDmg',
       'FireDMG', 'ColdDMG', 'PoisonDMG', 'DiseaseDMG',
+      'Attack', 'SpellDmg', 'HealAmt',
+      'Shielding', 'SpellShield', 'StrikeThrough', 'StunResist',
+      'Avoidance', 'Accuracy', 'Regen',
     ];
 
     function cleanName(name) {
@@ -151,6 +167,7 @@ fetch('reference/ldon/ldon-gear.json')
       classes: [],
       slots: [],
       aug: 'All',
+      stats: [],
       costMin: '',
       costMax: ''
     };
@@ -204,6 +221,15 @@ fetch('reference/ldon/ldon-gear.json')
         if (filters.aug === 'None' && itemAug !== 'None') return false;
         if (filters.aug !== 'None' && itemAug !== filters.aug) return false;
       }
+      if (filters.stats.length > 0) {
+        const stats = normalizeStats(item.stats || {});
+        if (Object.keys(stats).length === 0) return false;
+        const hasStat = filters.stats.some(s => {
+          if (s === 'Heroic') return Object.keys(stats).some(k => k.startsWith('Heroic'));
+          return stats[s] != null && stats[s] > 0;
+        });
+        if (!hasStat) return false;
+      }
       if (filters.costMin !== '') {
         if ((item.cost ?? 0) < parseInt(filters.costMin)) return false;
       }
@@ -227,8 +253,18 @@ fetch('reference/ldon/ldon-gear.json')
         parts.push('<span class="stat-val">' + esc(stats.Type) + '</span>');
       }
       for (const key of STAT_ORDER) {
-        if (stats[key] != null && stats[key] !== 0 && stats[key] !== '') {
-          parts.push(key + ' <span class="stat-val">' + esc(String(stats[key])) + '</span>');
+        if (key.startsWith('Heroic')) continue;
+        const val = stats[key];
+        const hk = HEROIC_MAP[key];
+        const hv = hk ? stats[hk] : null;
+        if (val != null && val !== 0 && val !== '') {
+          let s = key + ' <span class="stat-val">' + esc(String(val)) + '</span>';
+          if (hv != null && hv !== 0) {
+            s += '<span class="stat-heroic">+' + esc(String(hv)) + '</span>';
+          }
+          parts.push(s);
+        } else if (hv != null && hv !== 0) {
+          parts.push(key + ' <span class="stat-heroic">+' + esc(String(hv)) + '</span>');
         }
       }
       if (stats.Mod) {
@@ -291,7 +327,7 @@ fetch('reference/ldon/ldon-gear.json')
           if (formatted) statsHtml += formatted;
           const augSlots = stats['Augment Slots'];
           if (augSlots && augSlots.length) {
-            statsHtml += '<div style="margin-top:2px;font-size:10px;color:var(--text3)">Aug slots: ' + augSlots.join(', ') + '</div>';
+            statsHtml += '<div style="margin-top:2px;font-size:12px;color:var(--text3)">Aug slots: ' + augSlots.map(s => '<span class="slot-badge">' + esc(s) + '</span>').join(' ') + '</div>';
           }
           statsHtml += '</div>';
         } else {
@@ -304,7 +340,7 @@ fetch('reference/ldon/ldon-gear.json')
           '<td>' + (item.cost ?? '&mdash;') + '</td>' +
           '<td><span class="type-badge ' + (isItem ? 'type-badge-item' : 'type-badge-spell') + '">' + (isItem ? 'Item' : 'Spell') + '</span></td>' +
           '<td class="class-cell">' + esc(classes) + '</td>' +
-          '<td style="font-size:11px">' + esc(slots) + '</td>' +
+          '<td>' + (slots ? slots.split(', ').map(s => '<span class="slot-badge">' + esc(s) + '</span>').join(' ') : '') + '</td>' +
           '<td>' + augLabel + '</td>' +
           '<td>' + statsHtml + '</td>' +
           '</tr>';
@@ -370,9 +406,10 @@ fetch('reference/ldon/ldon-gear.json')
       renderMultiChips(clsChips, ALL_CLASSES, filters.classes, v => { filters.classes = v; rebuildFilters(); render(); });
       renderMultiChips(slotChips, ALL_SLOTS, filters.slots, v => { filters.slots = v; rebuildFilters(); render(); });
       renderChips(augChips, ALL_AUGS, filters.aug, v => { filters.aug = v; rebuildFilters(); render(); });
+      renderMultiChips(statChips, ALL_STATS_FILTER, filters.stats, v => { filters.stats = v; rebuildFilters(); render(); });
     }
 
-    let dunChips, typeChips, clsChips, slotChips, augChips;
+    let dunChips, typeChips, clsChips, slotChips, augChips, statChips;
     let searchInput, costMin, costMax;
 
     function resetFilters() {
@@ -382,6 +419,7 @@ fetch('reference/ldon/ldon-gear.json')
       filters.classes = [];
       filters.slots = [];
       filters.aug = 'All';
+      filters.stats = [];
       filters.costMin = '';
       filters.costMax = '';
       sortBy = 'cost';
@@ -471,6 +509,18 @@ fetch('reference/ldon/ldon-gear.json')
       augChips.className = 'exp-chips';
       augRow.appendChild(augChips);
       container.appendChild(augRow);
+
+      // Stats
+      const statRow = document.createElement('div');
+      statRow.className = 'filter-row';
+      const statLabel = document.createElement('span');
+      statLabel.className = 'filter-label';
+      statLabel.textContent = 'Stats';
+      statRow.appendChild(statLabel);
+      statChips = document.createElement('div');
+      statChips.className = 'exp-chips';
+      statRow.appendChild(statChips);
+      container.appendChild(statRow);
 
       // Cost range
       const costRow = document.createElement('div');

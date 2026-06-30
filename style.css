@@ -84,10 +84,10 @@ textarea:focus { border-color: var(--info-border); }
 .exp-actions { display: flex; gap: 8px; }
 .exp-btn { font-size: 12px; color: var(--info-text); background: none; border: none; cursor: pointer; padding: 0; }
 .exp-btn:hover { text-decoration: underline; }
-.exp-chips { display: flex; flex-wrap: wrap; gap: 6px; min-height: 32px; }
+.exp-chips { display: flex; flex-wrap: wrap; gap: 4px; min-height: 26px; }
 .chip {
-  display: inline-flex; align-items: center; gap: 5px;
-  font-size: 13px; padding: 4px 10px; border-radius: 20px;
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 12px; padding: 1px 8px; border-radius: 20px; line-height: 1.5;
   cursor: pointer; border: 0.5px solid var(--border2);
   background: var(--bg2); color: var(--text2); transition: background .15s, color .15s;
   user-select: none;
