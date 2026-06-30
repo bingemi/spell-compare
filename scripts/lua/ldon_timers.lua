@@ -15,6 +15,15 @@ local timers = {
     SR = 0
 }
 
+-- Total duration in seconds for each active timer (for progress bar)
+local timerDurations = {
+    MM = 0,
+    CL = 0,
+    EF = 0,
+    NR = 0,
+    SR = 0
+}
+
 -- Tracks the last remaining-second we announced to avoid spamming chat
 local last_announced = {
     MM = -1, CL = -1, EF = -1, NR = -1, SR = -1
@@ -43,7 +52,9 @@ end
 local function onAdventureSuccess()
     local theme = getActiveLDoNTheme()
     if theme then
-        timers[theme] = os.time() + (30 * 60) -- 30 minutes from now
+        local duration = 30 * 60 -- 30 minutes
+        timers[theme] = os.time() + duration
+        timerDurations[theme] = duration
         last_announced[theme] = -1            -- Reset announcement state
         print('\ar[LDoN Timers]\aw Success detected. Started 30 min timer for ' .. theme)
     else
@@ -89,6 +100,7 @@ local function checkAnnouncements()
             elseif remaining <= 0 then
                 -- Timer hit zero, announce and clear it
                 timers[theme] = 0
+                timerDurations[theme] = 0
                 mq.cmd(string.format("/g %s LDoN timer is UP!", theme))
             end
         end
@@ -99,10 +111,9 @@ end
 local function renderUI()
     if not openGUI then return end
 
-    -- Keep the window tightly wrapped around the text
-    local windowFlags = ImGuiWindowFlags.AlwaysAutoResize
+    imgui.SetNextWindowSize(220, 0, ImGuiCond.FirstUseEver)
 
-    openGUI, shouldDraw = imgui.Begin("LDoN", openGUI, windowFlags)
+    openGUI, shouldDraw = imgui.Begin("LDoN", openGUI)
     if shouldDraw then
         local now = os.time()
         
@@ -117,7 +128,17 @@ local function renderUI()
                 if remaining < 0 then remaining = 0 end
             end
             
-            imgui.Text(string.format("%s: %s", theme, formatTime(remaining)))
+            local duration = timerDurations[theme]
+            local fraction = duration > 0 and remaining / duration or 0
+            imgui.Text(string.format("%s:", theme))
+            imgui.SameLine(40)
+            imgui.PushStyleColor(ImGuiCol.PlotHistogram, ImVec4(0.4, 0.7, 1.0, 1.0))
+            imgui.ProgressBar(fraction, -1, 0, "")
+            imgui.PopStyleColor()
+            local drawList = imgui.GetWindowDrawList()
+            local barMinX, barMinY = imgui.GetItemRectMin()
+            local _, barMaxY = imgui.GetItemRectMax()
+            drawList:AddText(ImVec2(barMinX + 4, barMinY + (barMaxY - barMinY - imgui.GetTextLineHeight()) / 2), IM_COL32(255, 255, 255, 255), formatTime(remaining))
         end
         
         imgui.Separator()

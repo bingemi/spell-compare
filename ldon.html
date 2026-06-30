@@ -154,10 +154,7 @@ fetch('reference/ldon/ldon-gear.json')
     ];
 
     function cleanName(name) {
-      let n = name;
-      if (n.includes('Lore,')) n = n.substring(0, n.indexOf('Lore,'));
-      if (n.includes('Notlore,')) n = n.substring(0, n.indexOf('Notlore,'));
-      return n.replace(/,?\s*$/, '').trim();
+      return name.trim();
     }
 
     let filters = {
@@ -306,14 +303,10 @@ fetch('reference/ldon/ldon-gear.json')
         const isSpell = getItemType(item) === 'spell';
         const augLabel = item.aug ? '<span class="aug-badge-yes">' + esc(item.aug) + '</span>' : '<span class="aug-badge">&mdash;</span>';
 
-        const hasLore = item.name.includes('Lore,');
         const displayName = cleanName(item.name);
         let nameHtml = esc(displayName);
 
         let flagsHtml = '';
-        if (isItem) {
-          if (hasLore) flagsHtml += '<span class="lore-badge">LORE</span> ';
-        }
 
         const stats = item.stats || {};
         let extraHtml = '';
