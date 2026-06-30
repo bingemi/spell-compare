@@ -127,6 +127,8 @@ local function Event_Zone(line)
     local shortName = mq.TLO.Zone.ShortName()
     if not shortName then return end
 
+	print(("Entered Zone %s..."):format(shortName))
+
     local barkWord = nil
 
     -- Determine which map to use based on the NPC we targeted before zoning
@@ -167,16 +169,26 @@ mq.event('CatchZone', "You have entered #*#", Event_Zone)
 mq.event('CatchDanNetError', "Could not find channel group", Event_DanNetError)
 
 while not isDone do
-    local targetName = mq.TLO.Target.CleanName()
-    if targetName then
-        -- Track any of the 4 porter types
-        if targetName:find("^Magus") or targetName:find("^Liminal") or targetName:find("^Circlekeeper") or targetName:find("^Spirekeeper") then
-            lastPorter = targetName
+	local target = mq.TLO.Target
+    local targetName = target.CleanName()
+    
+    -- Ensure we actually have a target and it's valid
+    if targetName and target() and target.ID() > 0 then
+        
+        -- Ensure we are at a reasonable distance (100 or less)
+        local dist = target.Distance()
+        if dist and dist <= 100 then
+            
+            -- Track any of the 4 porter types
+            if targetName:find("^Magus") or targetName:find("^Liminal") or targetName:find("^Circlekeeper") or targetName:find("^Spirekeeper") then
+                lastPorter = targetName
+            end
+            
         end
     end
     
     mq.doevents()
-    mq.delay(100) 
+    mq.delay(100)
 end
 
 print("Port complete! Cleaning up and exiting Automator.")
