@@ -66,54 +66,13 @@ end
 -- Note: Adjust this string if your specific server uses a slightly different success message
 mq.event("LDoNSuccess", "#*#You have successfully completed your adventure#*#", onAdventureSuccess)
 
--- Handles checking times and outputting to /g
-local function checkAnnouncements()
-    local now = os.time()
-    for theme, expireTime in pairs(timers) do
-        if expireTime > 0 then
-            local remaining = expireTime - now
-            
-            if remaining > 0 and remaining <= 300 then
-                local announce = false
-                
-                if remaining <= 10 then
-                    -- Under 10 seconds: spam every 1 second
-                    if last_announced[theme] ~= remaining then
-                        announce = true
-                    end
-                elseif remaining <= 60 then
-                    -- Under 1 minute: every 10 seconds
-                    if remaining % 10 == 0 and last_announced[theme] ~= remaining then
-                        announce = true
-                    end
-                else
-                    -- Under 5 minutes: every 30 seconds
-                    if remaining % 30 == 0 and last_announced[theme] ~= remaining then
-                        announce = true
-                    end
-                end
-                
-                if announce then
-                    mq.cmd(string.format("/g %s LDoN timer: %s remaining!", theme, formatTime(remaining)))
-                    last_announced[theme] = remaining
-                end
-            elseif remaining <= 0 then
-                -- Timer hit zero, announce and clear it
-                timers[theme] = 0
-                timerDurations[theme] = 0
-                mq.cmd(string.format("/g %s LDoN timer is UP!", theme))
-            end
-        end
-    end
-end
-
 -- ImGui rendering for the compact window
 local function renderUI()
     if not openGUI then return end
 
     imgui.SetNextWindowSize(220, 0, ImGuiCond.FirstUseEver)
 
-    openGUI, shouldDraw = imgui.Begin("LDoN", openGUI)
+    openGUI, shouldDraw = imgui.Begin("LDoN Timers", openGUI)
     if shouldDraw then
         local now = os.time()
         
@@ -164,7 +123,6 @@ print('\ar[LDoN Timers]\aw Script started. Type \a-y/lua stop ldon_timers\aw or 
 -- Main loop
 while not shouldExit do
     mq.doevents()
-    checkAnnouncements()
     mq.delay(100) -- Prevents the script from consuming too much CPU
 end
 
