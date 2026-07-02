@@ -56,8 +56,15 @@ local function requestAdventure()
         end
 
         if mq.TLO.Window(WIN_NAME).Open() then
-            -- 2. Force the 'Type' Combobox to "Single Boss"
-            mq.cmd("/nomodkey /notify AdventureRequestWnd AdvRqst_TypeCombobox listselect 2")
+            -- 2. Dynamically select the 'Type' Combobox
+            local listIndex = 2 -- Default to Single Boss
+            
+            if currentZone == "everfrost" then
+                listIndex = 4 -- Option 4 is Collection
+                print("\ay[LDoNReq]\aw Everfrost detected: Forcing 'Collection' type.")
+            end
+			
+            mq.cmd(string.format("/nomodkey /notify AdventureRequestWnd AdvRqst_TypeCombobox listselect %d", listIndex))
             mq.delay(200)
 
             -- 3. Click Request Adventure
