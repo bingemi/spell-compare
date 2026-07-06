@@ -64,7 +64,6 @@
 50	Jolt	Kunark
 51	Ensnare	EQ
 51	Strength of Nature	Velious
-51	Tangle	Luclin
 52	Falcon Eye	Luclin
 52	Firestrike	Kunark
 52	Icewind	LoY
@@ -95,7 +94,6 @@
 61	Counteract Disease	EQ
 61	Counteract Poison	EQ
 61	Earthen Embrace	DoN
-61	Entangle	PoP
 61	Exile Summoned	Kunark
 62	Call of the Rathe	PoP
 62	Chloroblast	Kunark
