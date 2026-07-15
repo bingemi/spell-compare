@@ -6,6 +6,7 @@ local itemList = {}
 local currentIndex = 1
 
 local pendingBazaarSearch = nil
+local sendToGroup = false
 
 local args = {...}
 if #args == 0 then
@@ -28,7 +29,9 @@ for bagNumStr in string.gmatch(bagListStr, '([^,]+)') do
                     table.insert(itemList, {
                         name = item.Name(),
                         id = item.ID(),
-                        link = item.ItemLink('CLICKABLE')() 
+                        link = item.ItemLink('CLICKABLE')(),
+                        value = item.Value() or 0,
+                        tribute = item.Tribute() or 0
                     })
                 end
             end
@@ -57,6 +60,22 @@ local function getModifiedID(name, id)
     end
 end
 
+local function formatCoin(copperValue)
+    if not copperValue or copperValue == 0 then return "0c" end
+    local p = math.floor(copperValue / 1000)
+    local g = math.floor((copperValue % 1000) / 100)
+    local s = math.floor((copperValue % 100) / 10)
+    local c = copperValue % 10
+    
+    local result = ""
+    if p > 0 then result = result .. tostring(p) .. "p " end
+    if g > 0 then result = result .. tostring(g) .. "g " end
+    if s > 0 then result = result .. tostring(s) .. "s " end
+    if c > 0 then result = result .. tostring(c) .. "c" end
+    
+    return result:gsub("%s+$", "") 
+end
+
 local function drawGUI()
     if not isOpen then return end
 
@@ -77,6 +96,9 @@ local function drawGUI()
             ImGui.Text("Ascendant ID: " .. tostring(allaId))
             ImGui.Text("Base Name: " .. baseName)
             
+            ImGui.Text("Vendor Price: " .. formatCoin(currentItem.value))
+            ImGui.Text("Tribute: " .. tostring(currentItem.tribute))
+            
             ImGui.Separator()
             
             if ImGui.Button("1. Open Allaclone Website") then
@@ -90,10 +112,7 @@ local function drawGUI()
                 local newName = baseName .. " (Ascendant)"
                 local linkStr = currentItem.link
                 
-                -- Escape any special Lua pattern characters in the item name
                 local escapedName = currentItem.name:gsub("([%(%)%.%%%+%-%*%?%[%^%$])", "%%%1")
-                
-                -- Use the exact item name as the anchor to split the string
                 local prefix, hexData, suffix = linkStr:match("^(.)(.-)" .. escapedName .. "(.*)$")
                 
                 if prefix and hexData and suffix then
@@ -101,7 +120,6 @@ local function drawGUI()
                     local oldHex5 = string.format("%05X", oldId)
                     local newHexData = hexData
                     
-                    -- Swap the old ID out for the new ID in the hex data
                     if hexData:sub(1, 6):upper() == oldHex6:upper() then
                         newHexData = string.format("%06X", newId) .. hexData:sub(7)
                     elseif hexData:sub(1, 5):upper() == oldHex5:upper() then
@@ -116,13 +134,20 @@ local function drawGUI()
                         end
                     end
                     
-                    -- Reconstruct the forged link
                     local ascendantLink = prefix .. newHexData .. newName .. suffix
                     printf("\ag[ItemLookup]\ax Ascendant Version: %s", ascendantLink)
+                    
+                    if sendToGroup then
+                        mq.cmd("/g " .. ascendantLink)
+                    end
                 else
                     printf("\ar[ItemLookup]\ax Could not parse original link string. Name anchor failed.")
                 end
             end
+            
+            ImGui.SameLine()
+            -- Properly mapping the checkbox state back to our variable
+            sendToGroup = ImGui.Checkbox("Send to group", sendToGroup)
             
             if ImGui.Button("3. Search Base Name in Bazaar") then
                 pendingBazaarSearch = baseName
