@@ -24,7 +24,7 @@
 }
 html { font-size: 16px; }
 body { font-family: var(--font); background: var(--bg3); color: var(--text); min-height: 100vh; padding: 2rem 1rem; }
-.container { max-width: 860px; margin: 0 auto; position: relative; }
+.container { max-width: 1200px; margin: 0 auto; position: relative; }
 h1 { font-size: 22px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
 .subtitle { font-size: 14px; color: var(--text2); margin-bottom: 1.5rem; }
 .card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1rem 1.25rem; margin-bottom: 1rem; }
@@ -199,6 +199,37 @@ textarea:focus { border-color: var(--info-border); }
 }
 .nav-link:hover { color: var(--text); }
 .nav-link.active { color: var(--info-text); border-bottom-color: var(--info-text); }
+
+.nav-dropdown { position: relative; }
+.nav-dropdown-btn {
+  padding: 10px 12px 8px;
+  font-size: 13px; font-weight: 500; cursor: pointer;
+  color: var(--text2); transition: color .15s;
+  display: inline-flex; align-items: center; gap: 6px;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  background: none; border: none; font-family: var(--font);
+}
+.nav-dropdown-btn:hover { color: var(--text); }
+.nav-dropdown-btn.has-active { color: var(--info-text); border-bottom-color: var(--info-text); }
+.nav-dropdown-menu {
+  display: none; position: absolute; top: 100%; right: 0;
+  min-width: 180px; background: var(--bg); border: 0.5px solid var(--border2);
+  border-radius: var(--radius-md); box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  z-index: 10; padding: 4px 0;
+}
+.nav-dropdown-menu.open { display: block; }
+.nav-dropdown-menu a {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 12px; font-size: 13px; color: var(--text); text-decoration: none;
+}
+.nav-dropdown-menu a:hover { background: var(--bg2); }
+.nav-dropdown-menu a.active { color: var(--info-text); }
+
+.aar-tag {
+  display: inline-block; font-size: 11px; padding: 1px 7px; border-radius: 4px;
+  background: var(--bg2); color: var(--text2); white-space: nowrap;
+}
 
 .aa-form { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .aa-form .panel-label { grid-column: 1 / -1; }

@@ -11,14 +11,32 @@
 <div class="container">
 
   <nav class="nav-bar">
-    <a class="nav-link active" href="index.html"><i class="ti ti-wand" aria-hidden="true"></i>Missing Spells</a>
     <a class="nav-link" href="aa-tracker.html"><i class="ti ti-arrow-up-circle" aria-hidden="true"></i>AA Tracker</a>
-    <a class="nav-link" href="froggy.html"><i class="ti ti-map-pin" aria-hidden="true"></i>Froggy Locations</a>
-    <a class="nav-link" href="augments.html"><i class="ti ti-diamond" aria-hidden="true"></i>Augments</a>
-    <a class="nav-link" href="attack-cap.html"><i class="ti ti-sword" aria-hidden="true"></i>Attack Cap</a>
-    <a class="nav-link" href="raid-targets.html"><i class="ti ti-skull" aria-hidden="true"></i>Raid Targets</a>
-    <a class="nav-link" href="ldon.html"><i class="ti ti-backpack" aria-hidden="true"></i>LDoN Gear</a>
+    <a class="nav-link" href="aa-reference.html"><i class="ti ti-book" aria-hidden="true"></i>AA Reference</a>
+    <a class="nav-link active" href="index.html"><i class="ti ti-wand" aria-hidden="true"></i>Missing Spells</a>
+    <div class="nav-dropdown">
+      <button class="nav-dropdown-btn" id="moreDropdown"><i class="ti ti-dots" aria-hidden="true"></i>More<i class="ti ti-chevron-down" aria-hidden="true"></i></button>
+      <div class="nav-dropdown-menu" id="moreMenu">
+        <a href="froggy.html"><i class="ti ti-map-pin" aria-hidden="true"></i>Froggy Locations</a>
+        <a href="augments.html"><i class="ti ti-diamond" aria-hidden="true"></i>Augments</a>
+        <a href="attack-cap.html"><i class="ti ti-sword" aria-hidden="true"></i>Attack Cap</a>
+        <a href="raid-targets.html"><i class="ti ti-skull" aria-hidden="true"></i>Raid Targets</a>
+        <a href="ldon.html"><i class="ti ti-backpack" aria-hidden="true"></i>LDoN Gear</a>
+      </div>
+    </div>
   </nav>
+  <script>
+  document.getElementById('moreDropdown').addEventListener('click', function(e) {
+    e.stopPropagation();
+    var menu = document.getElementById('moreMenu');
+    var open = menu.classList.toggle('open');
+    this.classList.toggle('open', open);
+  });
+  document.addEventListener('click', function() {
+    document.getElementById('moreMenu').classList.remove('open');
+    document.getElementById('moreDropdown').classList.remove('open');
+  });
+  </script>
 
   <h1><i class="ti ti-wand" aria-hidden="true" style="font-size:20px;vertical-align:-2px;margin-right:6px"></i>Missing Spells</h1>
   <p class="subtitle">Select a class, upload your character spell file, pick expansions, then compare.</p>

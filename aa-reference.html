@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AA Reference</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="style.css">
+<style>
+.aar-search { display:flex; align-items:center; gap:8px; margin-bottom:12px; }
+.aar-search input {
+  flex:1; padding:8px 12px 8px 32px; font-size:13px; font-family:var(--font);
+  border:0.5px solid var(--border2); border-radius:var(--radius-md);
+  background:var(--bg2); color:var(--text); outline:none;
+}
+.aar-search input:focus { border-color:var(--info-border); }
+.aar-search-wrap { position:relative; flex:1; }
+.aar-search-wrap i { position:absolute; left:10px; top:50%; transform:translateY(-50%); font-size:14px; color:var(--text3); pointer-events:none; }
+.aar-count { font-size:12px; color:var(--text2); white-space:nowrap; }
+.aar-filter-toggle {
+  display:flex; align-items:center; gap:6px; font-size:13px; font-weight:500;
+  color:var(--text2); background:none; border:none; cursor:pointer;
+  padding:0; margin-bottom:8px; font-family:var(--font);
+}
+.aar-filter-toggle:hover { color:var(--text); }
+.aar-filter-toggle i { font-size:14px; transition:transform .15s; }
+.aar-filter-toggle.open i { transform:rotate(90deg); }
+.aar-filter-section { display:none; }
+.aar-filter-section.open { display:block; }
+.aar-filter-rows { display:flex; flex-direction:column; gap:6px; padding-bottom:4px; }
+.aar-filter-row { display:flex; align-items:center; gap:6px; }
+.aar-filter-label { font-size:11px; font-weight:500; color:var(--text2); text-transform:uppercase; letter-spacing:.05em; min-width:56px; flex-shrink:0; }
+.aar-filter-rows .chip { font-size:11px; padding:0 6px; line-height:1.6; }
+.col-name { min-width:200px; }
+.col-classes { max-width:220px; }
+.aar-expand-row { cursor:pointer; }
+.aar-expand-row:hover td { background:var(--bg2); }
+.aar-detail { display:none; }
+.aar-detail.open { display:table-row; }
+.aar-detail td { padding:0; border-bottom:0.5px solid var(--border); background:var(--bg2); }
+.aar-detail-inner { padding:12px 16px; display:grid; grid-template-columns:1fr 1fr; gap:8px 24px; font-size:13px; }
+.aar-detail-field { display:flex; flex-direction:column; gap:2px; }
+.aar-detail-label { font-size:11px; font-weight:500; color:var(--text2); text-transform:uppercase; letter-spacing:.05em; }
+.aar-detail-value { color:var(--text); line-height:1.5; }
+.aar-detail-desc { grid-column:1/-1; }
+.aar-detail-effects { grid-column:1/-1; }
+.aar-detail-effects table { width:100%; border-collapse:collapse; font-size:12px; margin-top:4px; }
+.aar-detail-effects th { font-size:10px; font-weight:500; color:var(--text2); text-transform:uppercase; letter-spacing:.05em; text-align:left; padding:4px 8px; border-bottom:0.5px solid var(--border); }
+.aar-detail-effects td { padding:4px 8px; border-bottom:0.5px solid var(--border); }
+.aar-detail-effects tr:last-child td { border-bottom:none; }
+.aar-tag {
+  display:inline-flex; font-size:11px; padding:1px 7px; border-radius:4px;
+  background:var(--bg2); color:var(--text2); border:0.5px solid var(--border);
+  white-space:nowrap; line-height:1.5;
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <nav class="nav-bar">
+    <a class="nav-link" href="aa-tracker.html"><i class="ti ti-arrow-up-circle" aria-hidden="true"></i>AA Tracker</a>
+    <a class="nav-link active" href="aa-reference.html"><i class="ti ti-book" aria-hidden="true"></i>AA Reference</a>
+    <a class="nav-link" href="index.html"><i class="ti ti-wand" aria-hidden="true"></i>Missing Spells</a>
+    <div class="nav-dropdown">
+      <button class="nav-dropdown-btn" id="moreDropdown"><i class="ti ti-dots" aria-hidden="true"></i>More<i class="ti ti-chevron-down" aria-hidden="true"></i></button>
+      <div class="nav-dropdown-menu" id="moreMenu">
+        <a href="froggy.html"><i class="ti ti-map-pin" aria-hidden="true"></i>Froggy Locations</a>
+        <a href="augments.html"><i class="ti ti-diamond" aria-hidden="true"></i>Augments</a>
+        <a href="attack-cap.html"><i class="ti ti-sword" aria-hidden="true"></i>Attack Cap</a>
+        <a href="raid-targets.html"><i class="ti ti-skull" aria-hidden="true"></i>Raid Targets</a>
+        <a href="ldon.html"><i class="ti ti-backpack" aria-hidden="true"></i>LDoN Gear</a>
+      </div>
+    </div>
+  </nav>
+  <script>
+  document.getElementById('moreDropdown').addEventListener('click', function(e) {
+    e.stopPropagation();
+    var menu = document.getElementById('moreMenu');
+    var open = menu.classList.toggle('open');
+    this.classList.toggle('open', open);
+  });
+  document.addEventListener('click', function() {
+    document.getElementById('moreMenu').classList.remove('open');
+    document.getElementById('moreDropdown').classList.remove('open');
+  });
+  </script>
+
+  <h1><i class="ti ti-book" aria-hidden="true" style="font-size:20px;vertical-align:-2px;margin-right:6px"></i>AA Reference</h1>
+  <p class="subtitle">All Alternate Abilities from the game database</p>
+
+  <div class="card">
+    <div class="panel-section">
+
+      <div class="aar-search">
+        <div class="aar-search-wrap">
+          <i class="ti ti-search" aria-hidden="true"></i>
+          <input type="text" id="searchInput" placeholder="Search name or description" autocomplete="off">
+        </div>
+        <span class="aar-count" id="resultCount"></span>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+        <button class="aar-filter-toggle" id="filterToggle" onclick="toggleFilters()"><i class="ti ti-chevron-right" aria-hidden="true"></i>Filters</button>
+        <button class="aa-btn" id="resetBtn" onclick="resetFilters()" style="font-size:12px;display:none"><i class="ti ti-refresh" aria-hidden="true" style="font-size:14px;vertical-align:-1px;margin-right:3px"></i>Reset</button>
+      </div>
+      <div class="aar-filter-section" id="filterSection">
+        <div class="aar-filter-rows" id="filterRows"></div>
+      </div>
+
+      <table class="aa-table" id="aaTable">
+        <thead>
+          <tr>
+            <th class="col-name th-sort" onclick="toggleSort('name')">Name<i class="ti ti-arrows-sort" id="s-name" style="font-size:12px;margin-left:4px;vertical-align:-1px;opacity:0.3"></i></th>
+            <th class="col-type th-sort" onclick="toggleSort('isActive')">Type<i class="ti ti-arrows-sort" id="s-isActive" style="font-size:12px;margin-left:4px;vertical-align:-1px;opacity:0.3"></i></th>
+            <th class="col-tier th-sort" onclick="toggleSort('tierName')">Tier<i class="ti ti-arrows-sort" id="s-tierName" style="font-size:12px;margin-left:4px;vertical-align:-1px;opacity:0.3"></i></th>
+            <th class="col-classes th-sort" onclick="toggleSort('classes')">Original Classes<i class="ti ti-arrows-sort" id="s-classes" style="font-size:12px;margin-left:4px;vertical-align:-1px;opacity:0.3"></i></th>
+            <th class="col-rank th-sort" onclick="toggleSort('totalRanks')">Ranks<i class="ti ti-arrows-sort" id="s-totalRanks" style="font-size:12px;margin-left:4px;vertical-align:-1px;opacity:0.3"></i></th>
+            <th class="col-rank th-sort" onclick="toggleSort('levelReq')">Level<i class="ti ti-arrows-sort" id="s-levelReq" style="font-size:12px;margin-left:4px;vertical-align:-1px;opacity:0.3"></i></th>
+            <th th-sort onclick="toggleSort('serverReleaseShort')">Release<i class="ti ti-arrows-sort" id="s-serverReleaseShort" style="font-size:12px;margin-left:4px;vertical-align:-1px;opacity:0.3"></i></th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+      <div class="aa-empty" id="emptyMsg">Loading...</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const CLASS_SHORT = {Warrior:'WAR',Cleric:'CLR',Paladin:'PAL',Ranger:'RNG',Shadowknight:'SHD',Druid:'DRU',Monk:'MNK',Bard:'BRD',Rogue:'ROG',Berserker:'BER',Beastlord:'BST',Necromancer:'NEC',Wizard:'WIZ',Magician:'MAG',Enchanter:'ENC',Shaman:'SHM'};
+let allAbilities = [];
+let sortCol = '';
+let sortDir = '';
+let searchTerm = '';
+let colFilters = {};
+
+function getFiltered() {
+  let list = allAbilities;
+
+  if (searchTerm) {
+    const term = searchTerm.toLowerCase();
+    list = list.filter(a => a.name.toLowerCase().includes(term) || (a.description || '').toLowerCase().includes(term));
+  }
+
+  Object.keys(colFilters).forEach(col => {
+    const sel = colFilters[col];
+    if (!sel || sel.size === 0) return;
+    if (col === 'tierName') list = list.filter(a => sel.has(a.tierName));
+    else if (col === 'isActive') list = list.filter(a => sel.has(a.recastTime > 0 ? 'Active' : 'Passive'));
+    else if (col === 'classes') list = list.filter(a => a.originalClassNames.some(c => sel.has(c)));
+    else if (col === 'serverReleaseShort') list = list.filter(a => sel.has(a.serverReleaseShort));
+  });
+
+  return list;
+}
+
+function getSorted(list) {
+  if (!sortCol || !sortDir) return list;
+
+  return list.slice().sort((a, b) => {
+    let va, vb;
+    if (sortCol === 'name') { va = a.name.toLowerCase(); vb = b.name.toLowerCase(); }
+    else if (sortCol === 'isActive') { va = a.recastTime > 0 ? 1 : 0; vb = b.recastTime > 0 ? 1 : 0; }
+    else if (sortCol === 'tierName') { va = a.tier; vb = b.tier; }
+    else if (sortCol === 'classes') { va = a.originalClassNames.join(',').toLowerCase(); vb = b.originalClassNames.join(',').toLowerCase(); }
+    else if (sortCol === 'totalRanks') { va = a.totalRanks; vb = b.totalRanks; }
+    else if (sortCol === 'levelReq') { va = a.levelReq; vb = b.levelReq; }
+    else if (sortCol === 'serverReleaseShort') { va = a.serverReleaseShort; vb = b.serverReleaseShort; }
+    if (va < vb) return sortDir === 'asc' ? -1 : 1;
+    if (va > vb) return sortDir === 'asc' ? 1 : -1;
+    return 0;
+  });
+}
+
+function toggleSort(col) {
+  if (sortCol === col) {
+    if (sortDir === 'asc') sortDir = 'desc';
+    else { sortCol = ''; sortDir = ''; }
+  } else {
+    sortCol = col;
+    sortDir = 'asc';
+  }
+  renderTable();
+}
+
+function toggleFilter(col, value) {
+  if (!colFilters[col]) colFilters[col] = new Set();
+  const sel = colFilters[col];
+  if (sel.has(value)) sel.delete(value);
+  else sel.add(value);
+  renderFilters();
+  renderTable();
+}
+
+function getUniqueValues(col) {
+  if (col === 'isActive') return ['Active', 'Passive'];
+  if (col === 'tierName') return ['Greater', 'Exalted', 'Ascendant'];
+  if (col === 'classes') {
+    const s = new Set();
+    allAbilities.forEach(a => a.originalClassNames.forEach(c => s.add(c)));
+    return Array.from(s).sort();
+  }
+  if (col === 'serverReleaseShort') return ['Classic', 'Kunark', 'Velious', 'Luclin', 'PoP', 'GoD+'];
+  return [];
+}
+
+function chipHtml(col, label, values) {
+  const sel = colFilters[col] || new Set();
+  const allActive = sel.size === 0;
+  let html = '<div class="aar-filter-row"><span class="aar-filter-label">' + label + '</span><div class="exp-chips">';
+  html += '<span class="chip' + (allActive ? ' active' : '') + '" onclick="clearFilter(\'' + col + '\')">All</span>';
+  values.forEach(v => {
+    const display = col === 'classes' ? (CLASS_SHORT[v] || v) : v;
+    html += '<span class="chip' + (sel.has(v) ? ' active' : '') + '" onclick="toggleFilter(\'' + col + '\',\'' + v.replace(/'/g, "\\'") + '\')">' + esc(display) + '</span>';
+  });
+  html += '</div></div>';
+  return html;
+}
+
+function clearFilter(col) {
+  colFilters[col] = new Set();
+  renderFilters();
+  renderTable();
+}
+
+function resetFilters() {
+  colFilters = {};
+  colFilters.serverReleaseShort = new Set(['Classic', 'Kunark', 'Velious', 'Luclin', 'PoP']);
+  renderFilters();
+  renderTable();
+}
+
+function renderFilters() {
+  const container = document.getElementById('filterRows');
+  container.innerHTML =
+    chipHtml('isActive', 'Type', getUniqueValues('isActive')) +
+    chipHtml('tierName', 'Tier', getUniqueValues('tierName')) +
+    chipHtml('classes', 'Class', getUniqueValues('classes')) +
+    chipHtml('serverReleaseShort', 'Release', getUniqueValues('serverReleaseShort'));
+}
+
+function toggleFilters() {
+  const section = document.getElementById('filterSection');
+  const toggle = document.getElementById('filterToggle');
+  const reset = document.getElementById('resetBtn');
+  const open = section.classList.toggle('open');
+  toggle.classList.toggle('open', open);
+  reset.style.display = open ? '' : 'none';
+}
+
+function renderTable() {
+  renderFilters();
+
+  const filtered = getSorted(getFiltered());
+  const tbody = document.getElementById('tableBody');
+  const empty = document.getElementById('emptyMsg');
+  const count = document.getElementById('resultCount');
+
+  count.textContent = filtered.length + ' of ' + allAbilities.length;
+
+  // update sort icons
+  document.querySelectorAll('.th-sort i.ti-arrows-sort').forEach(el => {
+    el.className = 'ti ti-arrows-sort';
+    el.style.opacity = '0.3';
+  });
+  if (sortCol) {
+    const icon = document.getElementById('s-' + sortCol);
+    if (icon) {
+      icon.className = 'ti ti-sort-' + (sortDir === 'asc' ? 'ascending' : 'descending');
+      icon.style.opacity = '1';
+    }
+  }
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = '';
+    empty.style.display = 'block';
+    empty.textContent = 'No matching abilities.';
+    return;
+  }
+  empty.style.display = 'none';
+
+  tbody.innerHTML = filtered.map((a, i) => {
+    const isActive = a.recastTime > 0;
+    const effectRows = (a.effectSummary && a.effectSummary.length > 0)
+      ? '<table><thead><tr><th>Effect</th><th>Range</th></tr></thead><tbody>' +
+        a.effectSummary.map(e => '<tr><td>' + esc(e.effectDesc) + '</td><td>' + esc(e.range) + '</td></tr>').join('') +
+        '</tbody></table>'
+      : '<span style="font-size:12px;color:var(--text3);font-style:italic">No effect data</span>';
+    const recastRow = isActive
+      ? '<div class="aar-detail-field"><span class="aar-detail-label">Recast</span><span class="aar-detail-value">' + a.recastTime + 's</span></div>'
+      : '';
+    return '<tr class="aar-expand-row" onclick="toggleDetail(' + i + ')">' +
+      '<td><i class="ti ti-chevron-right aar-chevron" id="chevron-' + i + '" style="font-size:12px;margin-right:6px;vertical-align:-1px;transition:transform .15s;color:var(--text3)"></i><strong>' + esc(a.name) + '</strong></td>' +
+      '<td><span class="badge-type badge-type-' + (isActive ? 'melee-active' : 'melee-passive') + '">' + (isActive ? 'Active' : 'Passive') + '</span></td>' +
+      '<td><span class="badge-tier badge-tier-' + a.tierName.toLowerCase() + '">' + a.tierName + '</span></td>' +
+      '<td class="col-classes">' + a.originalClassNames.map(c => '<span class="aar-tag">' + (CLASS_SHORT[c] || c) + '</span>').join(' ') + '</td>' +
+      '<td>' + a.totalRanks + '</td>' +
+      '<td>' + a.levelReq + '</td>' +
+      '<td><span class="aar-tag">' + esc(a.serverReleaseShort) + '</span></td>' +
+    '</tr>' +
+    '<tr class="aar-detail" id="detail-' + i + '"><td colspan="7">' +
+      '<div class="aar-detail-inner">' +
+        recastRow +
+        '<div class="aar-detail-desc aar-detail-field"><span class="aar-detail-label">Description</span><span class="aar-detail-value">' + esc(a.description) + '</span></div>' +
+        (a.effectSummary && a.effectSummary.length > 0
+          ? '<div class="aar-detail-effects aar-detail-field"><span class="aar-detail-label">Effect Summary</span>' + effectRows + '</div>'
+          : '') +
+      '</div>' +
+    '</td></tr>';
+  }).join('');
+}
+
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function toggleDetail(i) {
+  const row = document.getElementById('detail-' + i);
+  const chevron = document.getElementById('chevron-' + i);
+  if (!row) return;
+  const open = row.classList.toggle('open');
+  chevron.style.transform = open ? 'rotate(90deg)' : '';
+}
+
+document.getElementById('searchInput').addEventListener('input', function(e) {
+  searchTerm = e.target.value;
+  renderTable();
+});
+
+fetch('reference/aa-reference/aa.json')
+  .then(r => r.json())
+  .then(data => {
+    allAbilities = data.abilities || [];
+    colFilters.serverReleaseShort = new Set(['Classic', 'Kunark', 'Velious', 'Luclin', 'PoP']);
+    renderTable();
+  })
+  .catch(() => {
+    document.getElementById('emptyMsg').textContent = 'Failed to load AA data.';
+  });
+</script>
+</body>
+</html>
