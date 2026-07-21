@@ -12,8 +12,9 @@
         <MacroQuest config folder>/CharacterBackups/<Name>_<Server>_<timestamp>.json
 
     Notes:
-        - AA scanning loops indexes 1..MAX_AA. Raise MAX_AA if your server's
-          AA index range is higher than 3000.
+        - AA scanning loops indexes 1..MAX_AA (currently 32000, based on this
+          server's `SELECT MAX(id) FROM aa_ability` = 31101). If you move to
+          a different server, re-check that value and adjust MAX_AA.
         - Personal bank is included; shared bank is NOT, since it isn't
           reliably exposed via Lua TLOs on most MQ builds.
         - Some servers only populate bank data correctly with the bank
@@ -139,14 +140,21 @@ local function getAAs()
         abilities      = {},
     }
 
-    local MAX_AA = 3000 -- raise this if your server has a larger AA pool
+    local MAX_AA = 32000 -- confirmed via `SELECT MAX(id) FROM aa_ability;` = 31101, padded for future content
     for i = 1, MAX_AA do
         local aa = mq.TLO.Me.AltAbility(i)
         local rank = safe(function() return aa.Rank() end)
         if rank and rank > 0 then
             local name = safe(function() return aa.Name() end)
             if name and name ~= '' then
-                table.insert(result.abilities, { name = name, rank = rank })
+                table.insert(result.abilities, {
+                    name      = name,
+                    rank      = rank,
+                    group_id  = i, -- unique per AA line; distinguishes same-named abilities that are actually different lines
+                    max_rank  = safe(function() return aa.MaxRank() end), -- static design max, NOT filtered per-character
+                    category  = safe(function() return aa.Category() end),
+                    short_name = safe(function() return aa.ShortName() end),
+                })
             end
         end
     end
@@ -315,6 +323,126 @@ local function getBank()
 end
 
 ----------------------------------------------------------------------
+-- LDoN (Legends of Norrath adventures)
+-- Points earned per theme come from the character TLO (always available).
+-- Win/loss counts are NOT exposed via any character TLO - the only place
+-- that data exists is the "Adventure Stats" UI window (Alt+V -> View
+-- Stats). We read it directly from the window's listbox if it happens to
+-- be open. This is a real (non-OCR) technique - MQ can read text out of
+-- UI list controls - but it only works while that window is open, and
+-- could break if a server uses a heavily customized UI that renames the
+-- window/listbox. If it's not open, we note that clearly rather than
+-- silently omitting the data.
+----------------------------------------------------------------------
+local function getLDoNThemeStats()
+    local statsWnd = mq.TLO.Window('AdventureStatsWnd')
+    local isOpen = safe(function() return statsWnd.Open() end)
+
+    if not isOpen then
+        return {
+            available = false,
+            note = 'AdventureStatsWnd was not open. In-game, press Alt+V, click "View Stats", then re-run this script to capture win/loss counts per theme.',
+        }
+    end
+
+    local themeList = statsWnd.Child('AdvStats_ThemeList')
+    local rowCount = safe(function() return themeList.Items() end) or 0
+    local themes = {}
+
+    for row = 1, rowCount do
+        local cols = {}
+        for col = 1, 7 do
+            cols[col] = safe(function() return themeList.List(row, col)() end)
+        end
+        table.insert(themes, {
+            theme           = cols[1],
+            rank            = cols[2],
+            wins            = cols[3],
+            losses          = cols[4],
+            success_percent = cols[5],
+            total_points    = cols[7],
+            raw_columns     = cols, -- fallback if column layout differs on your server's UI
+        })
+    end
+
+    return { available = true, themes = themes }
+end
+
+local function getLDoN()
+    return {
+        total_points = safe(function() return mq.TLO.Me.LDoNPoints() end) or 0,
+        earned_by_theme = {
+            deepest_guk         = safe(function() return mq.TLO.Me.GukEarned() end) or 0,
+            miraguls_menagerie  = safe(function() return mq.TLO.Me.MMEarned() end) or 0,
+            rujarkian_hills     = safe(function() return mq.TLO.Me.RujEarned() end) or 0,
+            takish_hiz          = safe(function() return mq.TLO.Me.TakEarned() end) or 0,
+            mistmoore_catacombs = safe(function() return mq.TLO.Me.MirEarned() end) or 0,
+        },
+        theme_stats = getLDoNThemeStats(),
+    }
+end
+
+----------------------------------------------------------------------
+-- Skills - the full canonical skill name list per MacroQuest's docs.
+-- Me.Skill[name] returns 0 for skills your class/race can't use, so we
+-- only keep the ones that are actually trained/usable.
+----------------------------------------------------------------------
+local SKILL_NAMES = {
+    '1H Blunt', '1H Slashing', '2H Blunt', '2H Slashing', 'Abjuration',
+    'Alchemy', 'Alcohol Tolerance', 'Alteration', 'Apply Poison', 'Archery',
+    'Backstab', 'Baking', 'Bash', 'Begging', 'Berserking', 'Bind Wound',
+    'Blacksmithing', 'Block', 'Brass Instruments', 'Brewing', 'Channeling',
+    'Conjuration', 'Defense', 'Disarm', 'Disarm Traps', 'Divination',
+    'Dodge', 'Double Attack', 'Dragon Punch', 'Duel Wield', 'Eagle Strike',
+    'Evocation', 'Feign Death', 'Fishing', 'Fletching', 'Flying Kick',
+    'Forage', 'Frenzy', 'Hand To Hand', 'Hide', 'Intimidation',
+    'Jewelry Making', 'Kick', 'Make Poison', 'Meditate', 'Mend', 'Offense',
+    'Parry', 'Percussion Instruments', 'Pick Lock', 'Pick Pockets',
+    'Piercing', 'Pottery', 'Research', 'Riposte', 'Round Kick', 'Safe Fall',
+    'Sense Heading', 'Sense Traps', 'Sing', 'Slam', 'Sneak',
+    'Specialize Abjure', 'Specialize Alteration', 'Specialize Conjuration',
+    'Specialize Divination', 'Specialize Evocation', 'Stringed Instruments',
+    'Tailoring', 'Taunt', 'Throwing', 'Tiger Claw', 'Tinkering', 'Tracking',
+    'Wind Instruments',
+}
+
+local function getSkills()
+    local skills = {}
+    for _, skillName in ipairs(SKILL_NAMES) do
+        local value = safe(function() return mq.TLO.Me.Skill(skillName)() end)
+        if value and value > 0 then
+            skills[skillName] = value
+        end
+    end
+    return skills
+end
+
+----------------------------------------------------------------------
+-- Keyrings (mounts, illusions, familiars)
+----------------------------------------------------------------------
+local function getKeyringSection(keyringTLO)
+    local count = safe(function() return keyringTLO().Count() end) or 0
+    local items = {}
+    for i = 1, count do
+        local kri = keyringTLO(i)
+        table.insert(items, {
+            index = i,
+            name  = safe(function() return kri.Name() end),
+            id    = safe(function() return kri.Item.ID() end),
+        })
+    end
+    return items
+end
+
+local function getKeyrings()
+    return {
+        mounts    = getKeyringSection(mq.TLO.Mount),
+        illusions = getKeyringSection(mq.TLO.Illusion),
+        familiars = getKeyringSection(mq.TLO.Familiar),
+    }
+end
+
+----------------------------------------------------------------------
 -- Main
 ----------------------------------------------------------------------
 local function main()
@@ -325,6 +453,11 @@ local function main()
 
     print('\ayBacking up character data, this may take a few seconds...')
 
+    local ldonData = getLDoN()
+    if not ldonData.theme_stats.available then
+        print('\ayNote: LDoN win/loss data was unavailable. ' .. ldonData.theme_stats.note)
+    end
+
     local data = {
         meta          = getMeta(),
         currency      = getCurrency(),
@@ -332,6 +465,9 @@ local function main()
         equipment     = getEquipment(),
         inventory     = getInventoryBags(),
         bank          = getBank(),
+        ldon          = ldonData,
+        skills        = getSkills(),
+        keyrings      = getKeyrings(),
         spellbook     = getSpellbook(),
         memorized     = getMemorizedSpells(),
     }
