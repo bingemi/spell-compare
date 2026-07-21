@@ -1,3 +1,0 @@
-Moves all bots forward for 2 seconds in an attempt to zone
-
-/dgge /multiline ; /keypress FORWARD hold ; /timed 20 /keypress FORWARD

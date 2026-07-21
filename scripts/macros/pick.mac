@@ -1,7 +1,0 @@
-Sub Main
-    /echo Starting the Lockpick loop! To stop, type /endmac
-    :Loop
-    /keypress U
-    /delay 5
-    /goto :Loop
-/return

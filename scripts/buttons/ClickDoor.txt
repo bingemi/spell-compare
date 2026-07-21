@@ -1,3 +1,0 @@
-Tells bots to find nearest door and click it
-
-/dgge /multiline ; /doortarget ; /timed 5 /face fast door ; /timed 10 /keypress USE
