@@ -53,6 +53,33 @@
   background:var(--bg2); color:var(--text2); border:0.5px solid var(--border);
   white-space:nowrap; line-height:1.5;
 }
+.aar-override-toggle {
+  display:inline-flex; align-items:center; gap:8px; cursor:pointer; margin-top:4px;
+}
+.aar-override-toggle input { display:none; }
+.aar-override-slider {
+  width:36px; height:20px; border-radius:10px; background:var(--bg3);
+  border:1px solid var(--border); position:relative; transition:all .2s;
+}
+.aar-override-slider::after {
+  content:''; position:absolute; top:2px; left:2px; width:14px; height:14px;
+  border-radius:50%; background:var(--text3); transition:all .2s;
+}
+.aar-override-toggle input:checked + .aar-override-slider {
+  background:var(--success-bg); border-color:var(--success-text);
+}
+.aar-override-toggle input:checked + .aar-override-slider::after {
+  transform:translateX(16px); background:var(--success-text);
+}
+.aar-hide-toggle input:checked + .aar-override-slider {
+  background:var(--warning-bg); border-color:var(--warning-text);
+}
+.aar-hide-toggle input:checked + .aar-override-slider::after {
+  background:var(--warning-text);
+}
+.aar-toggles-row { display:flex; gap:16px; margin-top:4px; }
+.aar-toggle-item { display:flex; align-items:center; gap:8px; }
+.aar-toggle-label { font-size:12px; color:var(--text); }
 </style>
 </head>
 <body>
@@ -89,6 +116,8 @@
   <h1><i class="ti ti-book" aria-hidden="true" style="font-size:20px;vertical-align:-2px;margin-right:6px"></i>AA Reference</h1>
   <p class="subtitle">All Alternate Abilities from the game database</p>
 
+  <div class="char-bar" id="charBar"></div>
+
   <div class="card">
     <div class="panel-section">
 
@@ -110,15 +139,7 @@
 
       <table class="aa-table" id="aaTable">
         <thead>
-          <tr>
-            <th class="col-name th-sort" onclick="toggleSort('name')">Name<i class="ti ti-arrows-sort" id="s-name" style="font-size:12px;margin-left:4px;vertical-align:-1px;opacity:0.3"></i></th>
-            <th class="col-type th-sort" onclick="toggleSort('isActive')">Type<i class="ti ti-arrows-sort" id="s-isActive" style="font-size:12px;margin-left:4px;vertical-align:-1px;opacity:0.3"></i></th>
-            <th class="col-tier th-sort" onclick="toggleSort('tierName')">Tier<i class="ti ti-arrows-sort" id="s-tierName" style="font-size:12px;margin-left:4px;vertical-align:-1px;opacity:0.3"></i></th>
-            <th class="col-classes th-sort" onclick="toggleSort('classes')">Original Classes<i class="ti ti-arrows-sort" id="s-classes" style="font-size:12px;margin-left:4px;vertical-align:-1px;opacity:0.3"></i></th>
-            <th class="col-rank th-sort" onclick="toggleSort('totalRanks')">Ranks<i class="ti ti-arrows-sort" id="s-totalRanks" style="font-size:12px;margin-left:4px;vertical-align:-1px;opacity:0.3"></i></th>
-            <th class="col-rank th-sort" onclick="toggleSort('levelReq')">Level<i class="ti ti-arrows-sort" id="s-levelReq" style="font-size:12px;margin-left:4px;vertical-align:-1px;opacity:0.3"></i></th>
-            <th th-sort onclick="toggleSort('serverReleaseShort')">Release<i class="ti ti-arrows-sort" id="s-serverReleaseShort" style="font-size:12px;margin-left:4px;vertical-align:-1px;opacity:0.3"></i></th>
-          </tr>
+          <tr id="tableHead"></tr>
         </thead>
         <tbody id="tableBody"></tbody>
       </table>
@@ -126,15 +147,243 @@
     </div>
   </div>
 
+  <div class="card aar-unmatched-card" id="unmatchedCard" style="display:none">
+    <div class="panel-section">
+      <div class="panel-label"><i class="ti ti-alert-triangle" aria-hidden="true" style="font-size:14px;vertical-align:-1px;margin-right:4px"></i>Character AAs (Not in Reference)</div>
+      <table class="aa-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Category</th>
+            <th>Rank</th>
+            <th>Max Rank</th>
+          </tr>
+        </thead>
+        <tbody id="unmatchedBody"></tbody>
+      </table>
+    </div>
+  </div>
+
 </div>
 
 <script>
 const CLASS_SHORT = {Warrior:'WAR',Cleric:'CLR',Paladin:'PAL',Ranger:'RNG',Shadowknight:'SHD',Druid:'DRU',Monk:'MNK',Bard:'BRD',Rogue:'ROG',Berserker:'BER',Beastlord:'BST',Necromancer:'NEC',Wizard:'WIZ',Magician:'MAG',Enchanter:'ENC',Shaman:'SHM'};
+const CLASS_BY_SHORT = {};
+Object.entries(CLASS_SHORT).forEach(([full, short]) => { CLASS_BY_SHORT[short.toUpperCase()] = full; });
 let allAbilities = [];
 let sortCol = '';
 let sortDir = '';
 let searchTerm = '';
 let colFilters = {};
+
+const CHAR_STORAGE_KEY = 'aa-reference-chars';
+let charData = { current: '', chars: {} };
+
+function loadCharData() {
+  try {
+    const raw = localStorage.getItem(CHAR_STORAGE_KEY);
+    if (raw) {
+      const d = JSON.parse(raw);
+      if (d && d.chars) { charData = d; return; }
+    }
+  } catch {}
+  charData = { current: '', chars: {} };
+}
+
+function saveCharData() {
+  localStorage.setItem(CHAR_STORAGE_KEY, JSON.stringify(charData));
+}
+
+function getCurrentChar() {
+  if (!charData.current) return null;
+  return charData.chars[charData.current] || null;
+}
+
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function renderCharBar() {
+  const bar = document.getElementById('charBar');
+  const names = Object.keys(charData.chars);
+  let html = '<div class="char-pills">';
+  html += names.map(n => {
+    const ch = charData.chars[n];
+    const info = ch.meta ? ((ch.meta.class || '') + ' Lv' + (ch.meta.level || '?')) : '';
+    return '<span class="char-pill' + (n === charData.current ? ' active' : '') + '">' +
+      '<span onclick="switchCharacter(\'' + esc(n).replace(/'/g, "\\'") + '\')">' + esc(n) + '</span>' +
+      (info ? '<span style="font-size:10px;opacity:0.7;margin-left:4px">' + esc(info) + '</span>' : '') +
+      '<i class="ti ti-x" onclick="event.stopPropagation();removeCharacter(\'' + esc(n).replace(/'/g, "\\'") + '\')" style="font-size:11px;margin-left:4px;cursor:pointer;opacity:0.5" title="Remove"></i>' +
+      '</span>';
+  }).join('');
+  html += '<button class="aa-btn" onclick="document.getElementById(\'backupUpload\').click()" style="font-size:11px;padding:4px 10px"><i class="ti ti-upload" style="font-size:13px;vertical-align:-1px;margin-right:2px"></i>Upload Backup</button>';
+  html += '<input type="file" id="backupUpload" accept=".json" hidden onchange="handleBackupUpload(event)">';
+  html += '</div>';
+
+  const ch = getCurrentChar();
+  if (ch && ch.meta) {
+    const m = ch.meta;
+    html += '<div class="aar-char-info">';
+    html += '<span class="aar-char-tag"><i class="ti ti-user" style="font-size:12px"></i>' + esc(m.name || charData.current) + '</span>';
+    if (m.class) html += '<span class="aar-char-tag">' + esc(m.class) + '</span>';
+    if (m.level) html += '<span class="aar-char-tag">Lv ' + m.level + '</span>';
+    if (m.race) html += '<span class="aar-char-tag">' + esc(m.race) + '</span>';
+    if (m.server) html += '<span class="aar-tag">' + esc(m.server) + '</span>';
+    if (ch.aaSpent != null) html += '<span class="aar-char-tag">Spent: ' + ch.aaSpent + '</span>';
+    if (ch.aaUnspent != null) html += '<span class="aar-char-tag">Unspent: ' + ch.aaUnspent + '</span>';
+    html += '</div>';
+  }
+  bar.innerHTML = html;
+}
+
+function switchCharacter(name) {
+  if (name === charData.current) return;
+  charData.current = name;
+  saveCharData();
+  renderCharBar();
+  renderTable();
+}
+
+function removeCharacter(name) {
+  if (!confirm('Remove character "' + name + '" from the reference?')) return;
+  delete charData.chars[name];
+  if (charData.current === name) charData.current = Object.keys(charData.chars)[0] || '';
+  saveCharData();
+  renderCharBar();
+  renderTable();
+}
+
+function handleBackupUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data || !data.aa || !data.aa.abilities) {
+        alert('Invalid backup file format. Expected aa.abilities array.');
+        return;
+      }
+
+      const meta = data.meta || {};
+      const charName = meta.name || file.name.replace(/_ascendant_\d+_\d+\.json$/i, '').replace(/\.json$/i, '');
+
+      const refByName = {};
+      allAbilities.forEach(a => { refByName[a.name.trim().toLowerCase()] = a; });
+
+      const aaData = {};
+      const unmatched = [];
+      data.aa.abilities.forEach(ba => {
+        let refMatch = refByName[ba.name.trim().toLowerCase()];
+        if (!refMatch) {
+          const taggedMatch = ba.name.trim().match(/^(.+?)\s*\(([A-Z]{2,3})\)$/);
+          if (taggedMatch) {
+            const baseName = taggedMatch[1].trim().toLowerCase();
+            const classShort = taggedMatch[2].toUpperCase();
+            const className = CLASS_BY_SHORT[classShort];
+            if (className) {
+              const candidates = allAbilities.filter(a => a.name.trim().toLowerCase() === baseName && a.originalClassNames.includes(className));
+              if (candidates.length === 1) refMatch = candidates[0];
+            }
+          }
+        }
+        if (refMatch) {
+          aaData[refMatch.name] = {
+            rank: ba.rank,
+            maxRank: ba.max_rank,
+            refUniversalId: refMatch.universalId,
+            matched: true
+          };
+        } else {
+          aaData[ba.name.trim()] = {
+            rank: ba.rank,
+            maxRank: ba.max_rank,
+            refUniversalId: null,
+            matched: false,
+            category: ba.category || '',
+            groupId: ba.group_id
+          };
+          unmatched.push(ba);
+        }
+      });
+
+      const existingOverrides = (charData.chars[charName] && charData.chars[charName].overrides) || {};
+
+      charData.chars[charName] = {
+        meta: {
+          name: meta.name || charName,
+          class: meta.class || '',
+          level: meta.level || null,
+          race: meta.race || '',
+          server: meta.server || '',
+          guild: meta.guild || '',
+          deity: meta.deity || '',
+          backupDate: meta.backup_date || ''
+        },
+        aaData: aaData,
+        aaSpent: data.aa.spent_points != null ? data.aa.spent_points : null,
+        aaUnspent: data.aa.unspent_points != null ? data.aa.unspent_points : null,
+        overrides: existingOverrides,
+        hidden: (charData.chars[charName] && charData.chars[charName].hidden) || {}
+      };
+      charData.current = charName;
+      saveCharData();
+      renderCharBar();
+      renderTable();
+      alert('Loaded ' + Object.keys(aaData).length + ' AAs for ' + charName + '.' + (unmatched.length ? '\n' + unmatched.length + ' AAs not found in reference database.' : ''));
+    } catch (err) {
+      alert('Failed to parse backup file: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+function getCharRankInfo(abilityName) {
+  const ch = getCurrentChar();
+  if (!ch || !ch.aaData) return null;
+  return ch.aaData[abilityName] || null;
+}
+
+function isOverridden(abilityName) {
+  const ch = getCurrentChar();
+  if (!ch || !ch.overrides) return false;
+  return !!ch.overrides[abilityName];
+}
+
+function toggleOverride(abilityName) {
+  const ch = getCurrentChar();
+  if (!ch) return;
+  if (!ch.overrides) ch.overrides = {};
+  if (ch.overrides[abilityName]) {
+    delete ch.overrides[abilityName];
+  } else {
+    ch.overrides[abilityName] = true;
+  }
+  saveCharData();
+  renderTable();
+}
+
+function isHidden(abilityName) {
+  const ch = getCurrentChar();
+  if (!ch || !ch.hidden) return false;
+  return !!ch.hidden[abilityName];
+}
+
+function toggleHidden(abilityName) {
+  const ch = getCurrentChar();
+  if (!ch) return;
+  if (!ch.hidden) ch.hidden = {};
+  if (ch.hidden[abilityName]) {
+    delete ch.hidden[abilityName];
+  } else {
+    ch.hidden[abilityName] = true;
+  }
+  saveCharData();
+  renderTable();
+}
 
 function getFiltered() {
   let list = allAbilities;
@@ -144,6 +393,8 @@ function getFiltered() {
     list = list.filter(a => a.name.toLowerCase().includes(term) || (a.description || '').toLowerCase().includes(term));
   }
 
+  const hasChar = !!getCurrentChar();
+
   Object.keys(colFilters).forEach(col => {
     const sel = colFilters[col];
     if (!sel || sel.size === 0) return;
@@ -151,7 +402,23 @@ function getFiltered() {
     else if (col === 'isActive') list = list.filter(a => sel.has(a.recastTime > 0 ? 'Active' : 'Passive'));
     else if (col === 'classes') list = list.filter(a => a.originalClassNames.some(c => sel.has(c)));
     else if (col === 'serverReleaseShort') list = list.filter(a => sel.has(a.serverReleaseShort));
+    else if (col === 'hasRank') {
+      const wantTracked = sel.has('yes');
+      const wantUntracked = sel.has('no');
+      if (wantTracked && !wantUntracked) list = list.filter(a => getCharRankInfo(a.name) != null);
+      else if (!wantTracked && wantUntracked) list = list.filter(a => getCharRankInfo(a.name) == null);
+    }
+    else if (col === 'isHidden') {
+      const wantHidden = sel.has('yes');
+      const wantVisible = sel.has('no');
+      if (wantHidden && !wantVisible) list = list.filter(a => isHidden(a.name));
+      else if (!wantHidden && wantVisible) list = list.filter(a => !isHidden(a.name));
+    }
   });
+
+  if (hasChar && !colFilters.isHidden) {
+    list = list.filter(a => !isHidden(a.name));
+  }
 
   return list;
 }
@@ -168,6 +435,20 @@ function getSorted(list) {
     else if (sortCol === 'totalRanks') { va = a.totalRanks; vb = b.totalRanks; }
     else if (sortCol === 'levelReq') { va = a.levelReq; vb = b.levelReq; }
     else if (sortCol === 'serverReleaseShort') { va = a.serverReleaseShort; vb = b.serverReleaseShort; }
+    else if (sortCol === 'myRank') {
+      const ra = getCharRankInfo(a.name);
+      const rb = getCharRankInfo(b.name);
+      va = ra ? ra.rank : -1;
+      vb = rb ? rb.rank : -1;
+    }
+    else if (sortCol === 'status') {
+      const ra = getCharRankInfo(a.name);
+      const rb = getCharRankInfo(b.name);
+      const oa = isOverridden(a.name);
+      const ob = isOverridden(b.name);
+      va = oa ? 4 : ra ? (ra.rank >= ra.maxRank ? 2 : (a.totalRanksAtLevel65 > 0 && ra.rank >= a.totalRanksAtLevel65) ? 3 : ra.rank > 0 ? 1 : 0) : -1;
+      vb = ob ? 4 : rb ? (rb.rank >= rb.maxRank ? 2 : (b.totalRanksAtLevel65 > 0 && rb.rank >= b.totalRanksAtLevel65) ? 3 : rb.rank > 0 ? 1 : 0) : -1;
+    }
     if (va < vb) return sortDir === 'asc' ? -1 : 1;
     if (va > vb) return sortDir === 'asc' ? 1 : -1;
     return 0;
@@ -203,6 +484,8 @@ function getUniqueValues(col) {
     return Array.from(s).sort();
   }
   if (col === 'serverReleaseShort') return ['Classic', 'Kunark', 'Velious', 'Luclin', 'PoP', 'GoD+'];
+  if (col === 'hasRank') return ['yes', 'no'];
+  if (col === 'isHidden') return ['yes', 'no'];
   return [];
 }
 
@@ -212,7 +495,10 @@ function chipHtml(col, label, values) {
   let html = '<div class="aar-filter-row"><span class="aar-filter-label">' + label + '</span><div class="exp-chips">';
   html += '<span class="chip' + (allActive ? ' active' : '') + '" onclick="clearFilter(\'' + col + '\')">All</span>';
   values.forEach(v => {
-    const display = col === 'classes' ? (CLASS_SHORT[v] || v) : v;
+    let display = v;
+    if (col === 'classes') display = CLASS_SHORT[v] || v;
+    else if (col === 'hasRank') display = v === 'yes' ? 'Has Data' : 'No Data';
+    else if (col === 'isHidden') display = v === 'yes' ? 'Hidden' : 'Visible';
     html += '<span class="chip' + (sel.has(v) ? ' active' : '') + '" onclick="toggleFilter(\'' + col + '\',\'' + v.replace(/'/g, "\\'") + '\')">' + esc(display) + '</span>';
   });
   html += '</div></div>';
@@ -234,11 +520,15 @@ function resetFilters() {
 
 function renderFilters() {
   const container = document.getElementById('filterRows');
-  container.innerHTML =
-    chipHtml('isActive', 'Type', getUniqueValues('isActive')) +
+  let html = chipHtml('isActive', 'Type', getUniqueValues('isActive')) +
     chipHtml('tierName', 'Tier', getUniqueValues('tierName')) +
     chipHtml('classes', 'Class', getUniqueValues('classes')) +
     chipHtml('serverReleaseShort', 'Release', getUniqueValues('serverReleaseShort'));
+  if (getCurrentChar()) {
+    html += chipHtml('hasRank', 'Rank Data', getUniqueValues('hasRank'));
+    html += chipHtml('isHidden', 'Visibility', getUniqueValues('isHidden'));
+  }
+  container.innerHTML = html;
 }
 
 function toggleFilters() {
@@ -250,18 +540,62 @@ function toggleFilters() {
   reset.style.display = open ? '' : 'none';
 }
 
+function renderTableHead() {
+  const hasChar = !!getCurrentChar();
+  const tr = document.getElementById('tableHead');
+  let html = '<th class="col-name th-sort" onclick="toggleSort(\'name\')">Name<i class="ti ti-arrows-sort" id="s-name" style="font-size:12px;margin-left:4px;vertical-align:-1px;opacity:0.3"></i></th>' +
+    '<th class="col-type th-sort" onclick="toggleSort(\'isActive\')">Type<i class="ti ti-arrows-sort" id="s-isActive" style="font-size:12px;margin-left:4px;vertical-align:-1px;opacity:0.3"></i></th>' +
+    '<th class="col-tier th-sort" onclick="toggleSort(\'tierName\')">Tier<i class="ti ti-arrows-sort" id="s-tierName" style="font-size:12px;margin-left:4px;vertical-align:-1px;opacity:0.3"></i></th>' +
+    '<th class="col-classes th-sort" onclick="toggleSort(\'classes\')">Original Classes<i class="ti ti-arrows-sort" id="s-classes" style="font-size:12px;margin-left:4px;vertical-align:-1px;opacity:0.3"></i></th>' +
+    '<th class="col-rank th-sort" onclick="toggleSort(\'totalRanks\')">Ranks<i class="ti ti-arrows-sort" id="s-totalRanks" style="font-size:12px;margin-left:4px;vertical-align:-1px;opacity:0.3"></i></th>' +
+    '<th class="col-rank th-sort" onclick="toggleSort(\'levelReq\')">Level<i class="ti ti-arrows-sort" id="s-levelReq" style="font-size:12px;margin-left:4px;vertical-align:-1px;opacity:0.3"></i></th>' +
+    '<th th-sort onclick="toggleSort(\'serverReleaseShort\')">Release<i class="ti ti-arrows-sort" id="s-serverReleaseShort" style="font-size:12px;margin-left:4px;vertical-align:-1px;opacity:0.3"></i></th>';
+  if (hasChar) {
+    html += '<th class="col-rank th-sort" onclick="toggleSort(\'myRank\')">My Rank<i class="ti ti-arrows-sort" id="s-myRank" style="font-size:12px;margin-left:4px;vertical-align:-1px;opacity:0.3"></i></th>' +
+      '<th class="th-sort" onclick="toggleSort(\'status\')">Status<i class="ti ti-arrows-sort" id="s-status" style="font-size:12px;margin-left:4px;vertical-align:-1px;opacity:0.3"></i></th>';
+  }
+  tr.innerHTML = html;
+}
+
+function renderUnmatched() {
+  const ch = getCurrentChar();
+  const card = document.getElementById('unmatchedCard');
+  const tbody = document.getElementById('unmatchedBody');
+  if (!ch || !ch.aaData) {
+    card.style.display = 'none';
+    return;
+  }
+  const unmatched = Object.entries(ch.aaData).filter(([, v]) => !v.matched);
+  if (unmatched.length === 0) {
+    card.style.display = 'none';
+    return;
+  }
+  card.style.display = '';
+  unmatched.sort((a, b) => a[0].localeCompare(b[0]));
+  tbody.innerHTML = unmatched.map(([name, info]) => {
+    return '<tr>' +
+      '<td><strong>' + esc(name) + '</strong></td>' +
+      '<td>' + esc(info.category || '-') + '</td>' +
+      '<td>' + info.rank + '</td>' +
+      '<td>' + info.maxRank + '</td>' +
+    '</tr>';
+  }).join('');
+}
+
 function renderTable() {
   renderFilters();
+  renderTableHead();
+  renderUnmatched();
 
   const filtered = getSorted(getFiltered());
   const tbody = document.getElementById('tableBody');
   const empty = document.getElementById('emptyMsg');
   const count = document.getElementById('resultCount');
+  const hasChar = !!getCurrentChar();
 
   count.textContent = filtered.length + ' of ' + allAbilities.length;
 
-  // update sort icons
-  document.querySelectorAll('.th-sort i.ti-arrows-sort').forEach(el => {
+  document.querySelectorAll('#tableHead .th-sort i.ti-arrows-sort').forEach(el => {
     el.className = 'ti ti-arrows-sort';
     el.style.opacity = '0.3';
   });
@@ -291,6 +625,33 @@ function renderTable() {
     const recastRow = isActive
       ? '<div class="aar-detail-field"><span class="aar-detail-label">Recast</span><span class="aar-detail-value">' + a.recastTime + 's</span></div>'
       : '';
+
+    let rankCell = '';
+    let statusCell = '';
+    if (hasChar) {
+      const ri = getCharRankInfo(a.name);
+      const overridden = isOverridden(a.name);
+      if (ri || overridden) {
+        const rank = ri ? ri.rank : 0;
+        const maxRank = ri ? ri.maxRank : a.totalRanks;
+        const pct = maxRank > 0 ? Math.round((rank / maxRank) * 100) : 0;
+        const done = rank >= maxRank || overridden;
+        const capped = !overridden && a.totalRanksAtLevel65 > 0 && rank >= a.totalRanksAtLevel65;
+        const fillClass = done ? ' done' : '';
+        rankCell = '<td><div class="aar-rank-bar"><div class="aar-rank-track"><div class="aar-rank-fill' + fillClass + '" style="width:' + (overridden ? 100 : pct) + '%"></div></div><span class="aar-rank-text">' + rank + ' / ' + maxRank + '</span></div></td>';
+        let stBadge;
+        if (overridden) stBadge = '<span class="badge-status badge-status-done">Done</span>';
+        else if (done) stBadge = '<span class="badge-status badge-status-done">Done</span>';
+        else if (capped) stBadge = '<span class="badge-status badge-status-capped">Level Capped</span>';
+        else if (rank > 0) stBadge = '<span class="badge-status badge-status-progress">In Progress</span>';
+        else stBadge = '<span class="badge-status badge-status-none">Not Started</span>';
+        statusCell = '<td style="white-space:nowrap">' + stBadge + '</td>';
+      } else {
+        rankCell = '<td><span class="aar-rank-text" style="color:var(--text3)">-</span></td>';
+        statusCell = '<td><span class="badge-status badge-status-none">Not Purchased</span></td>';
+      }
+    }
+
     return '<tr class="aar-expand-row" onclick="toggleDetail(' + i + ')">' +
       '<td><i class="ti ti-chevron-right aar-chevron" id="chevron-' + i + '" style="font-size:12px;margin-right:6px;vertical-align:-1px;transition:transform .15s;color:var(--text3)"></i><strong>' + esc(a.name) + '</strong></td>' +
       '<td><span class="badge-type badge-type-' + (isActive ? 'melee-active' : 'melee-passive') + '">' + (isActive ? 'Active' : 'Passive') + '</span></td>' +
@@ -299,23 +660,20 @@ function renderTable() {
       '<td>' + a.totalRanks + '</td>' +
       '<td>' + a.levelReq + '</td>' +
       '<td><span class="aar-tag">' + esc(a.serverReleaseShort) + '</span></td>' +
+      rankCell +
+      statusCell +
     '</tr>' +
-    '<tr class="aar-detail" id="detail-' + i + '"><td colspan="7">' +
+    '<tr class="aar-detail" id="detail-' + i + '"><td colspan="' + (hasChar ? 9 : 7) + '">' +
       '<div class="aar-detail-inner">' +
-        recastRow +
+        (hasChar ? '<div class="aar-detail-field aar-toggles"><div class="aar-detail-label">Actions</div><div class="aar-toggles-row"><div class="aar-toggle-item"><span class="aar-toggle-label">Mark Done</span><label class="aar-override-toggle"><input type="checkbox" ' + (isOverridden(a.name) ? 'checked' : '') + ' onchange="toggleOverride(\'' + esc(a.name).replace(/'/g, "\\'") + '\')" onclick="event.stopPropagation()"><span class="aar-override-slider"></span></label></div><div class="aar-toggle-item"><span class="aar-toggle-label">Hide</span><label class="aar-override-toggle aar-hide-toggle"><input type="checkbox" ' + (isHidden(a.name) ? 'checked' : '') + ' onchange="toggleHidden(\'' + esc(a.name).replace(/'/g, "\\'") + '\')" onclick="event.stopPropagation()"><span class="aar-override-slider"></span></label></div></div></div>' : '') +
         '<div class="aar-detail-desc aar-detail-field"><span class="aar-detail-label">Description</span><span class="aar-detail-value">' + esc(a.description) + '</span></div>' +
         (a.effectSummary && a.effectSummary.length > 0
           ? '<div class="aar-detail-effects aar-detail-field"><span class="aar-detail-label">Effect Summary</span>' + effectRows + '</div>'
           : '') +
+        recastRow +
       '</div>' +
     '</td></tr>';
   }).join('');
-}
-
-function esc(s) {
-  const d = document.createElement('div');
-  d.textContent = s;
-  return d.innerHTML;
 }
 
 function toggleDetail(i) {
@@ -331,11 +689,14 @@ document.getElementById('searchInput').addEventListener('input', function(e) {
   renderTable();
 });
 
+loadCharData();
+
 fetch('reference/aa-reference/aa.json')
   .then(r => r.json())
   .then(data => {
     allAbilities = data.abilities || [];
     colFilters.serverReleaseShort = new Set(['Classic', 'Kunark', 'Velious', 'Luclin', 'PoP']);
+    renderCharBar();
     renderTable();
   })
   .catch(() => {

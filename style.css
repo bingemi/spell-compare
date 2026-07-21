@@ -118,7 +118,7 @@ textarea:focus { border-color: var(--info-border); }
 .badge-tier, .badge-status, .badge-type { display:inline-block; font-size:10px; padding:1px 7px; border-radius:4px; font-weight:500; white-space:nowrap; }
 .badge-status-done { background: var(--success-bg); color: var(--success-text); }
 .badge-status-progress { background: var(--warning-bg); color: var(--warning-text); }
-.badge-status-capped { background: var(--success-bg); color: var(--success-text); }
+.badge-status-capped { background: var(--info-bg); color: var(--info-text); }
 .badge-status-none { background: var(--bg2); color: var(--text3); }
 .badge-status-restricted { background: var(--danger-bg); color: var(--danger-text); }
 .badge-tier-greater { background:#e6f7e6; color:#2d7d2d; }
@@ -144,10 +144,6 @@ textarea:focus { border-color: var(--info-border); }
   .badge-type-cures { background:#2a1a3a; color:#ab7dcc; }
   .badge-type-threat { background:#3a1a00; color:#ff8a65; }
   .badge-type-other { background:#2a2a2a; color:#999; }
-}
-  .badge-tier-greater { background:#1a3a1a; color:#7dcc7d; }
-  .badge-tier-exalted { background:#1a2a4a; color:#7dabcc; }
-  .badge-tier-ascendant { background:#2a1a3a; color:#ab7dcc; }
 }
 .icon-danger { color: var(--danger-text); }
 .icon-warning { color: var(--warning-text); }
@@ -276,3 +272,13 @@ textarea:focus { border-color: var(--info-border); }
 .char-add-form { display: inline-flex; align-items: center; gap: 4px; }
 .char-add-form input { width: 150px; padding: 5px 8px; font-size: 13px; font-family: var(--font); border: 0.5px solid var(--border2); border-radius: var(--radius-md); background: var(--bg2); color: var(--text); outline: none; }
 .char-add-form input:focus { border-color: var(--info-border); }
+
+.aar-rank-bar { display:flex; align-items:center; gap:6px; white-space:nowrap; }
+.aar-rank-track { width:60px; height:6px; border-radius:3px; background:var(--bg3); overflow:hidden; flex-shrink:0; }
+.aar-rank-fill { height:100%; border-radius:3px; background:var(--info-text); transition:width .2s; }
+.aar-rank-fill.done { background:var(--success-text); }
+.aar-rank-text { font-size:12px; color:var(--text2); font-variant-numeric:tabular-nums; }
+.aar-char-info { font-size:12px; color:var(--text2); display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:6px; }
+.aar-char-tag { display:inline-flex; align-items:center; gap:4px; font-size:11px; padding:2px 8px; border-radius:4px; background:var(--bg2); color:var(--text2); border:0.5px solid var(--border); }
+.aar-unmatched-card { margin-top:0; }
+.aar-unmatched-card .panel-label { color:var(--warning-text); }
